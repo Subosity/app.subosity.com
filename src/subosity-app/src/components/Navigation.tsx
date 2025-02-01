@@ -68,24 +68,26 @@ const Navigation: React.FC = () => {
                 <Navbar.Toggle aria-controls="navbar-nav" />
 
                 <Navbar.Collapse id="navbar-nav">
-                    <Nav className="me-auto navbar-nav">
+                    {user && (
+                        <Nav className="me-auto navbar-nav">
 
-                        <Nav.Link as={Link} to="/">
-                            <FontAwesomeIcon icon={faDashboard} className="me-2" />
-                            Dashboard
-                        </Nav.Link>
-                        <Nav.Link as={Link} to="/mysubscriptions">
-                            <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
-                            Subscriptions
-                        </Nav.Link>
-                        <Nav.Link as={Link} to="/calendar">
-                            <FontAwesomeIcon icon={faCalendar} className="me-2" />
-                            Calendar
-                        </Nav.Link>
+                            <Nav.Link as={Link} to="/">
+                                <FontAwesomeIcon icon={faDashboard} className="me-2" />
+                                Dashboard
+                            </Nav.Link>
+                            <Nav.Link as={Link} to="/mysubscriptions">
+                                <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
+                                Subscriptions
+                            </Nav.Link>
+                            <Nav.Link as={Link} to="/calendar">
+                                <FontAwesomeIcon icon={faCalendar} className="me-2" />
+                                Calendar
+                            </Nav.Link>
 
-                    </Nav>
+                        </Nav>
+                    )}
 
-                    <Nav className="navbar-nav d-flex align-items-center">
+                    <Nav className="navbar-nav d-flex align-items-center ms-auto">
                         {user && (
                             <div className="position-relative me-3">
                                 <Button

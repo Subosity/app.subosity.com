@@ -32,7 +32,11 @@ const AppContent: React.FC = () => {
             />
             <main className="flex-grow-1">
                 <Routes>
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/" element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    } />
                     {/* <Route path="/about" element={<About />} /> */}
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
