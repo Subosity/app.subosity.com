@@ -34,6 +34,15 @@ jobs:
           echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> ./src/subosity-app/.env
           echo "VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}" >> ./src/subosity-app/.env
 
+      - name: Generate Version
+        id: version
+        run: |
+          TIMESTAMP=$(date '+%Y.%m%d.%H%M')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          VERSION="v${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo ${VERSION} > ./src/subosity-app/public/version.txt
+
       - name: Install Dependencies
         working-directory: ./src/subosity-app
         run: npm ci
