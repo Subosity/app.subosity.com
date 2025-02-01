@@ -25,18 +25,6 @@ const Footer = () => {
           <Link to="/privacy" className="text-decoration-none">
             Privacy Policy
           </Link>
-          {user && (
-            <>
-              <span className="mx-2">|</span>
-              <Link to="/pricing" className="text-decoration-none">
-                Pricing
-              </Link>
-              <span className="mx-2">|</span>
-              <Link to="/about" className="text-decoration-none">
-                About Us
-              </Link>
-            </>
-          )}
         </div>
       </div>
     </footer>

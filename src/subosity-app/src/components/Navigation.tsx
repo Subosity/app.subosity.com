@@ -69,38 +69,20 @@ const Navigation: React.FC = () => {
 
                 <Navbar.Collapse id="navbar-nav">
                     <Nav className="me-auto navbar-nav">
+
                         <Nav.Link as={Link} to="/">
-                            <FontAwesomeIcon icon={faHome} className="me-2" />
-                            Home
+                            <FontAwesomeIcon icon={faDashboard} className="me-2" />
+                            Dashboard
+                        </Nav.Link>
+                        <Nav.Link as={Link} to="/mysubscriptions">
+                            <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
+                            Subscriptions
+                        </Nav.Link>
+                        <Nav.Link as={Link} to="/calendar">
+                            <FontAwesomeIcon icon={faCalendar} className="me-2" />
+                            Calendar
                         </Nav.Link>
 
-                        {user ? (
-                            <>
-                                <Nav.Link as={Link} to="/dashboard">
-                                    <FontAwesomeIcon icon={faDashboard} className="me-2" />
-                                    Dashboard
-                                </Nav.Link>
-                                <Nav.Link as={Link} to="/mysubscriptions">
-                                    <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
-                                    Subscriptions
-                                </Nav.Link>
-                                <Nav.Link as={Link} to="/calendar">
-                                    <FontAwesomeIcon icon={faCalendar} className="me-2" />
-                                    Calendar
-                                </Nav.Link>
-                            </>
-                        ) : (
-                            <>
-                                <Nav.Link as={Link} to="/pricing">
-                                    <FontAwesomeIcon icon={faTags} className="me-2" />
-                                    Pricing
-                                </Nav.Link>
-                                <Nav.Link as={Link} to="/about">
-                                    <FontAwesomeIcon icon={faInfoCircle} className="me-2" />
-                                    About
-                                </Nav.Link>
-                            </>
-                        )}
                     </Nav>
 
                     <Nav className="navbar-nav d-flex align-items-center">
