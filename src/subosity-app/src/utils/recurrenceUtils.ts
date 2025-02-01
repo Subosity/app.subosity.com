@@ -18,8 +18,8 @@ export const WEEKDAYS = [
   { value: 'MO', label: 'Monday' },
   { value: 'TU', label: 'Tuesday' },
   { value: 'WE', label: 'Wednesday' },
-  { value: 'TH', label: 'THursday' },
-  { value: 'FR', label: 'FRiday' },
+  { value: 'TH', label: 'Thursday' },
+  { value: 'FR', label: 'Friday' },
   { value: 'SA', label: 'Saturday' },
   { value: 'SU', label: 'Sunday' },
 ];
