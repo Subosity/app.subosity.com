@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, Badge, Offcanvas, Form, InputGroup, Alert } from 'react-bootstrap';
+import { Button, Card, Badge, Offcanvas, Form, InputGroup, Alert, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faThLarge, faList, faSearch, faSort, faHandHoldingDollar, faSquarePlus, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faQuestion, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faThLarge, faList, faSearch, faSort, faHandHoldingDollar, faSquarePlus, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faQuestion, faXmark, faFilter, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
 import SubscriptionCard from '../components/SubscriptionCard';
@@ -26,6 +26,9 @@ const MySubscriptions = () => {
     const [searchText, setSearchText] = useState('');
     const [sortOrder, setSortOrder] = useState<'name' | 'date' | 'frequency'>('name');
     const [selectedStates, setSelectedStates] = useState<string[]>(['trial', 'active', 'canceled', 'expired', 'paused']);
+    const [excludedStates, setExcludedStates] = useState<string[]>([]);
+    const [excludedCategories, setExcludedCategories] = useState<string[]>([]);
+    const [showFilters, setShowFilters] = useState(false);
 
     const stateFilterOptions = [
         { value: 'trial', label: 'Trial', icon: faClock },
@@ -95,39 +98,12 @@ const MySubscriptions = () => {
     };
 
     const filterSubscriptions = (subs: Subscription[]): Subscription[] => {
-        // First filter by state
-        let filtered = subs.filter(sub => selectedStates.includes(sub.state));
-
-        // Then apply text search
-        if (!searchText) return filtered;
-
-        const searchLower = searchText.toLowerCase();
-        return filtered.filter(sub => {
-            // Convert all searchable fields to lowercase strings
-            const searchableFields = [
-                sub.providerName,
-                sub.providerDescription,
-                sub.providerCategory,
-                sub.nickname,
-                sub.paymentProviderName,
-                sub.paymentDetails,
-                sub.notes,
-                sub.state,
-                sub.recurrenceRule,
-                // Convert numerical/date values to strings
-                sub.amount?.toString(),
-                sub.startDate?.toString(),
-                // Format amount as currency
-                sub.amount ? `$${sub.amount.toFixed(2)}` : '',
-                // Format date in multiple formats for better matching
-                sub.startDate ? new Date(sub.startDate).toLocaleDateString() : ''
-            ]
-                .filter(Boolean) // Remove null/undefined values
-                .map(field => field.toLowerCase());
-
-            // Return true if any field contains the search text
-            return searchableFields.some(field => field.includes(searchLower));
-        });
+        // Filter by both states and categories
+        return subs.filter(sub =>
+            !excludedStates.includes(sub.state) &&
+            !excludedCategories.includes(sub.providerCategory)
+        );
+        // ... rest of your existing search logic
     };
 
     const sortSubscriptions = (subs: Subscription[]) => {
@@ -242,6 +218,65 @@ const MySubscriptions = () => {
         );
     };
 
+    const getUniqueCategories = (subs: Subscription[]): string[] => {
+        return [...new Set(subs
+            .map(sub => sub.providerCategory)
+            .filter(Boolean)
+            .sort()
+        )];
+    };
+
+    // First, add the select styles object
+    const selectStyles = {
+        control: (base: any) => ({
+            ...base,
+            backgroundColor: 'var(--bs-body-bg)',
+            borderColor: 'var(--bs-border-color)',
+            '&:hover': {
+                borderColor: 'var(--bs-primary)'
+            }
+        }),
+        menu: (base: any) => ({
+            ...base,
+            backgroundColor: 'var(--bs-body-bg)',
+            borderColor: 'var(--bs-border-color)'
+        }),
+        option: (base: any, state: any) => ({
+            ...base,
+            backgroundColor: state.isFocused
+                ? 'var(--bs-primary)'
+                : 'var(--bs-body-bg)',
+            color: state.isFocused
+                ? 'white'
+                : 'var(--bs-body-color)'
+        }),
+        input: (base: any) => ({
+            ...base,
+            color: 'var(--bs-body-color)'
+        }),
+        singleValue: (base: any) => ({
+            ...base,
+            color: 'var(--bs-body-color)'
+        }),
+        multiValue: (base: any) => ({
+            ...base,
+            backgroundColor: 'var(--bs-primary)',
+            color: 'white'
+        }),
+        multiValueLabel: (base: any) => ({
+            ...base,
+            color: 'white'
+        }),
+        multiValueRemove: (base: any) => ({
+            ...base,
+            color: 'white',
+            ':hover': {
+                backgroundColor: 'var(--bs-primary-dark)',
+                color: 'white'
+            }
+        })
+    };
+
     return (
         <div className="container py-4">
             <div className="d-flex justify-content-between align-items-start mb-4">
@@ -264,96 +299,145 @@ const MySubscriptions = () => {
 
             {/* Search and Sort Controls - Always visible */}
             <div className="row mb-4">
-                <div className="col-lg-5">
-                    <InputGroup>
-                        <InputGroup.Text style={{
-                            backgroundColor: 'var(--bs-body-bg)',
-                            color: 'var(--bs-body-color)'
-                        }}>
-                            <FontAwesomeIcon icon={faSearch} />
-                        </InputGroup.Text>
-                        <Form.Control
-                            type="text"
-                            placeholder="Search subscriptions..."
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            style={{
+                <div className="col">
+                    <div className="d-flex gap-2">
+                        <InputGroup className="flex-grow-1">
+                            <InputGroup.Text style={{
                                 backgroundColor: 'var(--bs-body-bg)',
                                 color: 'var(--bs-body-color)'
-                            }}
-                        />
-                    </InputGroup>
-                </div>
-                <div className="col-lg-5">
-                    <Select
-                        isMulti
-                        value={stateFilterOptions.filter(option =>
-                            selectedStates.includes(option.value)
-                        )}
-                        onChange={(selected) => {
-                            setSelectedStates(selected ? selected.map(option => option.value) : []);
-                        }}
-                        options={stateFilterOptions}
-                        placeholder="Filter by State..."
-                        className="w-100"
-                        components={{ Menu: CustomMenu }}
-                        styles={{
-                            control: (base) => ({
-                                ...base,
-                                backgroundColor: 'var(--bs-body-bg)',
-                                borderColor: 'var(--bs-border-color)'
-                            }),
-                            menu: (base) => ({
-                                ...base,
-                                backgroundColor: 'var(--bs-body-bg)',
-                                borderColor: 'var(--bs-border-color)'
-                            }),
-                            option: (base, state) => ({
-                                ...base,
-                                backgroundColor: state.isFocused
-                                    ? 'var(--bs-primary)'
-                                    : 'var(--bs-body-bg)',
-                                color: state.isFocused
-                                    ? 'white'
-                                    : 'var(--bs-body-color)'
-                            }),
-                            multiValue: (base) => ({
-                                ...base,
-                                backgroundColor: 'var(--bs-primary)',
-                                color: 'white'
-                            }),
-                            multiValueLabel: (base) => ({
-                                ...base,
-                                color: 'white'
-                            })
-                        }}
-                    />
-                </div>
-                <div className="col-lg-1">
-                    <Form.Select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
-                    >
-                        <option value="name">Sort by Name</option>
-                        <option value="date">Sort by Date</option>
-                        <option value="frequency">Sort by Frequency</option>
-                    </Form.Select>
-                </div>
-                <div className="col-lg-1">
-                    <div className="btn-group w-100">
+                            }}>
+                                <FontAwesomeIcon icon={faSearch} />
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Search subscriptions..."
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                style={{
+                                    backgroundColor: 'var(--bs-body-bg)',
+                                    color: 'var(--bs-body-color)'
+                                }}
+                            />
+                        </InputGroup>
+
                         <Button
-                            variant={viewMode === 'card' ? 'primary' : 'outline-primary'}
-                            onClick={() => setViewMode('card')}
+                            variant={showFilters ? 'primary' : 'primary'}
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="d-flex align-items-center position-relative"
                         >
-                            <FontAwesomeIcon icon={faThLarge} />
+                            <FontAwesomeIcon icon={faFilter} className="me-2" />
+                            Filters
+                            {(excludedStates.length > 0 || excludedCategories.length > 0) && (
+                                <span
+                                    className="position-absolute translate-middle badge rounded-pill bg-danger"
+                                    style={{
+                                        fontSize: '0.65em',
+                                        top: -2,
+                                        right: -2,
+                                        padding: '0.35em 0.5em'
+                                    }}
+                                >
+                                    {excludedStates.length + excludedCategories.length}
+                                    <span className="visually-hidden">active filters</span>
+                                </span>
+                            )}
                         </Button>
-                        <Button
-                            variant={viewMode === 'list' ? 'primary' : 'outline-primary'}
-                            onClick={() => setViewMode('list')}
-                        >
-                            <FontAwesomeIcon icon={faList} />
-                        </Button>
+
+                        <div className="btn-group">
+                            <Button
+                                variant={viewMode === 'card' ? 'primary' : 'outline-primary'}
+                                onClick={() => setViewMode('card')}
+                            >
+                                <FontAwesomeIcon icon={faThLarge} />
+                            </Button>
+                            <Button
+                                variant={viewMode === 'list' ? 'primary' : 'outline-primary'}
+                                onClick={() => setViewMode('list')}
+                            >
+                                <FontAwesomeIcon icon={faList} />
+                            </Button>
+                        </div>
                     </div>
+
+                    {/* Collapsible Filters Section */}
+                    <Collapse in={showFilters}>
+                        <div>
+                            <Card className="mt-3 shadow-sm" style={{
+                                backgroundColor: 'var(--bs-body-bg)',
+                                borderColor: 'var(--bs-border-color)'
+                            }}>
+                                <Card.Body>
+                                    <div className="row g-3">
+                                        <div className="col-md-4">
+                                            <Form.Label>
+                                                Exclude States<br />
+                                                <small className="text-muted">Exclude certain subscription States from the current view.</small>
+                                            </Form.Label>
+                                            <Select
+                                                isMulti
+                                                value={stateFilterOptions.filter(option =>
+                                                    excludedStates.includes(option.value)
+                                                )}
+                                                onChange={(selected) => {
+                                                    setExcludedStates(selected ? selected.map(option => option.value) : []);
+                                                }}
+                                                options={stateFilterOptions}
+                                                placeholder="Select states to exclude..."
+                                                styles={selectStyles}
+                                            />
+                                        </div>
+                                        <div className="col-md-4">
+                                            <Form.Label>
+                                                Exclude Categories<br />
+                                                <small className="text-muted">Exclude certain subscription Categories from the current view.</small>
+                                                </Form.Label>
+                                            <Select
+                                                isMulti
+                                                value={getUniqueCategories(subscriptions)
+                                                    .filter(cat => excludedCategories.includes(cat))
+                                                    .map(cat => ({ value: cat, label: cat }))}
+                                                onChange={(selected) => {
+                                                    setExcludedCategories(selected ? selected.map(option => option.value) : []);
+                                                }}
+                                                options={getUniqueCategories(subscriptions)
+                                                    .map(cat => ({ value: cat, label: cat }))}
+                                                placeholder="Select categories to exclude..."
+                                                styles={selectStyles}
+                                            />
+                                        </div>
+                                        <div className="col-md-4">
+                                            <Form.Label>
+                                                Sort By<br />
+                                                <small className="text-muted">Sort your subscriptions, in the current view.</small>
+                                                </Form.Label>
+                                            <Form.Select
+                                                value={sortOrder}
+                                                onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+                                                style={{
+                                                    backgroundColor: 'var(--bs-body-bg)',
+                                                    color: 'var(--bs-body-color)',
+                                                    borderColor: 'var(--bs-border-color)'
+                                                }}
+                                            >
+                                                <option value="name">Name</option>
+                                                <option value="date">Date</option>
+                                                <option value="frequency">Frequency</option>
+                                            </Form.Select>
+                                        </div>
+                                    </div>
+                                    <div className="d-flex justify-content-end mt-3">
+                                        <Button
+                                            variant="primary"
+                                            onClick={() => setShowFilters(false)}
+                                        >
+                                            <FontAwesomeIcon icon={faCheck} className="me-2" />
+                                            Apply Filters
+                                        </Button>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </div>
+                    </Collapse>
                 </div>
             </div>
 
