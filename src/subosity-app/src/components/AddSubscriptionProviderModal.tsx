@@ -6,14 +6,21 @@ import { faChevronLeft, faSave, faPlus, faExclamationTriangle } from '@fortaweso
 import SubscriptionFinder from './SubscriptionFinder';
 import { useToast } from '../ToastContext';
 import { supabase } from '../supabaseClient';
+import Select from 'react-select/creatable';
 
 interface Props {
     show: boolean;
     onHide: () => void;
     onSave: (data: any) => void;
+    existingProviders: Array<{ name: string, website: string }>;
 }
 
-const AddSubscriptionProviderModal: React.FC<Props> = ({ show, onHide, onSave }) => {
+const AddSubscriptionProviderModal: React.FC<Props> = ({ 
+    show, 
+    onHide, 
+    onSave,
+    existingProviders 
+}) => {
     const { addToast } = useToast();
     const [formData, setFormData] = useState({
         name: '',
@@ -24,24 +31,74 @@ const AddSubscriptionProviderModal: React.FC<Props> = ({ show, onHide, onSave })
         icon: ''
     });
     const [isFormValid, setIsFormValid] = useState(false);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+    const [submitted, setSubmitted] = useState(false);
+    const [providers, setProviders] = useState<any[]>([]);
 
-    // Add validation effect
+    // Update validation effect
     useEffect(() => {
         const isValid = Boolean(
             formData.name?.trim() &&
             formData.description?.trim() &&
-            formData.icon?.trim()
+            formData.icon?.trim() &&
+            formData.category?.trim()  // Add category validation
         );
         setIsFormValid(isValid);
     }, [formData]);
 
-    const handleMetadataFetched = (metadata: { name: string; description: string; icons: string[] }) => {
+    // Add this effect to fetch unique categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const { data, error } = await supabase
+                .from('subscription_provider')
+                .select('category')
+                .not('category', 'is', null);
+            
+            if (data && !error) {
+                // Get unique categories and sort them
+                const uniqueCategories = [...new Set(data.map(item => item.category))]
+                    .filter(Boolean)
+                    .sort();
+                setCategories(uniqueCategories);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // Add effect to fetch providers
+    useEffect(() => {
+        const fetchProviders = async () => {
+            const { data } = await supabase
+                .from('subscription_provider')
+                .select('name, website');
+            if (data) setProviders(data);
+        };
+        fetchProviders();
+    }, []);
+
+    const validateProvider = (metadata: { name: string, website?: string }) => {
+        const existingProvider = providers.find(p => 
+            p.website === metadata.website || 
+            p.name.toLowerCase() === metadata.name.toLowerCase()
+        );
+        
+        if (existingProvider) {
+            addToast('A subscription provider with this name or website already exists in the system.', 'error');
+            return false;
+        }
+        return true;
+    };
+
+    const handleMetadataFetched = (metadata: { name: string; description: string; website?: string }) => {
+        if (!validateProvider(metadata)) return;
+        
         setFormData(prev => ({
             ...prev,
             name: metadata.name,
             description: metadata.description,
-            // Don't set a default icon - make user explicitly choose
-            website: prev.website || metadata.website || ''
+            website: metadata.website || ''
         }));
     };
 
@@ -54,6 +111,9 @@ const AddSubscriptionProviderModal: React.FC<Props> = ({ show, onHide, onSave })
     };
 
     const handleSubmit = async () => {
+        setSubmitted(true);
+        if (!isFormValid) return;
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No authenticated user');
@@ -108,21 +168,74 @@ const AddSubscriptionProviderModal: React.FC<Props> = ({ show, onHide, onSave })
                             onIconSelected={handleIconSelected}
                             name={formData.name}
                             description={formData.description}
+                            category={formData.category}
                             onNameChange={(name) => setFormData(prev => ({ ...prev, name }))}
                             onDescriptionChange={(description) => setFormData(prev => ({ ...prev, description }))}
+                            onWebsiteChange={(website) => setFormData(prev => ({ ...prev, website }))}
+                            existingProviders={existingProviders}
                         />
                     </Form.Group>
 
+                    {/* Update Category Form.Group */}
                     <Form.Group className="mb-3">
-                        <Form.Label>Category</Form.Label>
+                        <Form.Label>
+                            Category <span className="text-danger">*</span>
+                        </Form.Label>
                         <div className="text-muted mb-2" style={{ fontSize: '0.75em' }}>
                             Category of subscription (e.g. "Entertainment", "Fitness & Health")
                         </div>
-                        <Form.Control
-                            type="text"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        <Select
+                            isClearable
+                            isCreateable
+                            options={categories.map(category => ({ value: category, label: category }))}
+                            value={formData.category ? { value: formData.category, label: formData.category } : null}
+                            onChange={(newValue) => {
+                                setTouched(prev => ({ ...prev, category: true }));
+                                setFormData(prev => ({ 
+                                    ...prev, 
+                                    category: newValue?.value || '' 
+                                }));
+                            }}
+                            onBlur={() => setTouched(prev => ({ ...prev, category: true }))}
+                            placeholder="Select or type a category..."
+                            styles={{
+                                control: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: 'var(--bs-body-bg)',
+                                    borderColor: (touched.category || submitted) && !formData.category?.trim() 
+                                        ? 'var(--bs-danger)' 
+                                        : 'var(--bs-border-color)'
+                                }),
+                                menu: (base) => ({
+                                    ...base,
+                                    backgroundColor: 'var(--bs-body-bg)',
+                                    borderColor: 'var(--bs-border-color)'
+                                }),
+                                option: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: state.isFocused 
+                                        ? 'var(--bs-primary)' 
+                                        : 'var(--bs-body-bg)',
+                                    color: state.isFocused 
+                                        ? 'white' 
+                                        : 'var(--bs-body-color)',
+                                    cursor: 'pointer'
+                                }),
+                                singleValue: (base) => ({
+                                    ...base,
+                                    color: 'var(--bs-body-color)'
+                                }),
+                                input: (base) => ({
+                                    ...base,
+                                    color: 'var(--bs-body-color)'
+                                })
+                            }}
                         />
+                        {(touched.category || submitted) && !formData.category?.trim() && (
+                            <div className="text-danger small mt-1">
+                                Please select or enter a category
+                            </div>
+                        )}
                     </Form.Group>
 
                     <Form.Group className="mb-3">

@@ -209,6 +209,7 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
     const [touched, setTouched] = useState<TouchedFields>({});
 
     const [providers, setProviders] = useState<any[]>([]);
+    const [providersLoaded, setProvidersLoaded] = useState(false);
     const [paymentProviders, setPaymentProviders] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -284,33 +285,32 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
         setIsValid(Object.keys(newErrors).length === 0);
     }, [formData]);
 
+    const fetchProviders = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const [subscriptionResponse, paymentResponse] = await Promise.all([
+                supabase.from('subscription_provider').select('*'),
+                supabase.from('payment_provider').select('*')
+            ]);
+
+            if (subscriptionResponse.error) throw subscriptionResponse.error;
+            if (paymentResponse.error) throw paymentResponse.error;
+
+            setProviders(subscriptionResponse.data || []);
+            setPaymentProviders(paymentResponse.data || []);
+            setProvidersLoaded(true);
+        } catch (err) {
+            console.error('Error fetching providers:', err);
+            setError('Failed to load providers');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Use fetchProviders in useEffect
     useEffect(() => {
-        const fetchProviders = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                // Fetch both providers in parallel
-                const [subscriptionResponse, paymentResponse] = await Promise.all([
-                    supabase.from('subscription_provider').select('*'),
-                    supabase.from('payment_provider').select('*')
-                ]);
-
-                if (subscriptionResponse.error) throw subscriptionResponse.error;
-                if (paymentResponse.error) throw paymentResponse.error;
-
-
-                setProviders(subscriptionResponse.data || []);
-                setPaymentProviders(paymentResponse.data || []);
-
-            } catch (err) {
-                console.error('Error fetching providers:', err);
-                setError('Failed to load providers');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchProviders();
     }, []);
 
@@ -606,10 +606,13 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
             <AddSubscriptionProviderModal
                 show={showAddProvider}
                 onHide={() => setShowAddProvider(false)}
-                onSave={(data) => {
-                    // Handle new provider data
+                onSave={async (newProvider) => {
+                    await fetchProviders(); // Re-fetch providers
+                    // Set the newly created provider as the selected one
+                    handleChange('providerId', newProvider.id);
                     setShowAddProvider(false);
                 }}
+                existingProviders={providers}
             />
 
             {/* Update parent components to receive isValid state */}

@@ -5,37 +5,46 @@ import { faSearch, faExclamationTriangle, faCheckCircle } from '@fortawesome/fre
 import { ThemeProvider } from '../ThemeContext';
 
 interface Props {
-    onMetadataFetched: (metadata: { 
-        name: string; 
-        description: string; 
-        icons: string[]; 
-        website?: string 
+    onMetadataFetched: (metadata: {
+        name: string;
+        description: string;
+        icons: string[];
+        website?: string
     }) => void;
     onIconSelected?: (icon: string) => void;
-    name: string;
-    description: string;
+    name?: string; // Change to optional
+    description?: string; // Change to optional
+    website?: string; // Change to optional
+    category?: string; // Change to optional
     onNameChange: (name: string) => void;
     onDescriptionChange: (description: string) => void;
+    onWebsiteChange: (website: string) => void;
+    onError?: (error: string) => void;
+    existingProviders?: Array<{ name: string, website: string }>;
 }
 
-const SubscriptionFinder: React.FC<Props> = ({ 
-    onMetadataFetched, 
-    onIconSelected = () => {}, 
-    name,
-    description,
+const SubscriptionFinder: React.FC<Props> = ({
+    onMetadataFetched,
+    onIconSelected = () => { },
+    name = '',
+    description = '',
+    website = '',
     onNameChange,
-    onDescriptionChange
+    onDescriptionChange,
+    onWebsiteChange,
+    onError,
+    existingProviders = []
 }) => {
     const [domain, setDomain] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [metadata, setMetadata] = useState<{ name: string; description: string; icons: string[] } | null>(null);
+    const [metadata, setMetadata] = useState<{ name: string; description: string; icons: string[]; website?: string } | null>(null);
     const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
     const theme = useContext(ThemeProvider);
 
     const uniqueIcons = metadata?.icons ? [...new Set(metadata.icons)] : [];
 
-    const chunk = (arr: any[], size: number) => 
+    const chunk = (arr: any[], size: number) =>
         Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
             arr.slice(i * size, i * size + size)
         );
@@ -43,23 +52,36 @@ const SubscriptionFinder: React.FC<Props> = ({
     const fetchMetadata = async () => {
         setLoading(true);
         setError(null);
-        setMetadata(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-metadata?domain=${domain}`, {
-                headers: {
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-                }
-            });
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-metadata?domain=${domain}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
             const metadata = await response.json();
+
+            const existingProvider = existingProviders.find(p =>
+                p.website === metadata.website ||
+                p.name.toLowerCase() === metadata.name.toLowerCase()
+            );
+
+            if (existingProvider) {
+                setError('A subscription provider with this name or website already exists in the system.');
+                return;
+            }
+
             setMetadata(metadata);
             onMetadataFetched(metadata);
+
+            if (metadata.name) onNameChange(metadata.name);
+            if (metadata.description) onDescriptionChange(metadata.description);
+            if (metadata.website) {
+                setDomain(metadata.website);
+                onWebsiteChange(metadata.website);
+            }
         } catch (err) {
-            setError(`Failed to fetch metadata: ${err.message}`);
+            setError(`Failed to fetch metadata: ${err instanceof Error ? err.message : 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -89,6 +111,7 @@ const SubscriptionFinder: React.FC<Props> = ({
                     name: metadata.name,
                     description: metadata.description,
                     icon: selectedIcon,
+                    website: metadata.website,
                     domain
                 })
             });
@@ -100,6 +123,45 @@ const SubscriptionFinder: React.FC<Props> = ({
             alert('Subscription Provider saved successfully!');
         } catch (err) {
             setError(`Failed to save Subscription Provider: ${err.message}`);
+        }
+    };
+
+    // Add these validation functions
+    const validateName = (name: string) => {
+        const existingProvider = existingProviders.find(p =>
+            p.name.toLowerCase() === name.toLowerCase()
+        );
+        if (existingProvider) {
+            setError('A subscription provider with this name already exists in the system.');
+            return false;
+        }
+        setError(null);
+        return true;
+    };
+
+    const validateWebsite = (website: string) => {
+        const existingProvider = existingProviders.find(p =>
+            p.website === website
+        );
+        if (existingProvider) {
+            setError('A subscription provider with this website already exists in the system.');
+            return false;
+        }
+        setError(null);
+        return true;
+    };
+
+    // Update the onChange handlers
+    const handleNameChange = (newName: string) => {
+        if (validateName(newName)) {
+            onNameChange(newName);
+        }
+    };
+
+    const handleWebsiteChange = (newWebsite: string) => {
+        if (validateWebsite(newWebsite)) {
+            onWebsiteChange(newWebsite);
+            setDomain(newWebsite);
         }
     };
 
@@ -118,28 +180,36 @@ const SubscriptionFinder: React.FC<Props> = ({
                         onChange={(e) => setDomain(e.target.value)}
                         required
                     />
-                    <Button 
-                        variant="primary" 
-                        onClick={fetchMetadata} 
+                    <Button
+                        variant="primary"
+                        onClick={fetchMetadata}
                         disabled={loading}
                     >
                         {loading ? <Spinner animation="border" size="sm" /> : <FontAwesomeIcon icon={faSearch} />}
                     </Button>
                 </InputGroup>
 
-                {error && <Alert variant="danger"><FontAwesomeIcon icon={faExclamationTriangle} className="me-2" />{error}</Alert>}
-                
+                {error && (
+                    <Alert variant="danger" className="mt-3">
+                        <FontAwesomeIcon icon={faExclamationTriangle} className="me-2" />
+                        {error}
+                    </Alert>
+                )}
+
                 {metadata && (
                     <div>
                         <h5>Found Metadata</h5>
                         <Form.Group className="mb-3">
-                            <Form.Label>Name <span className="text-danger">*</span></Form.Label>
-                            <Form.Control 
-                                type="text" 
+                            <Form.Label>
+                                Name <span className="text-danger">*</span><br />
+                                <small className="text-muted" style={{ fontSize: '0.75em' }}>Shorten this name to the simple brand name. (e.g. "Costco", "Walmart+", etc)</small>
+                            </Form.Label>
+                            <Form.Control
+                                type="text"
                                 value={name}
-                                onChange={(e) => onNameChange(e.target.value)}
-                                isInvalid={!name.trim()}
-                                required 
+                                onChange={(e) => handleNameChange(e.target.value)}
+                                isInvalid={!!error}
+                                required
                             />
                             <Form.Control.Feedback type="invalid">
                                 Please enter a name
@@ -147,14 +217,16 @@ const SubscriptionFinder: React.FC<Props> = ({
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Description <span className="text-danger">*</span></Form.Label>
-                            <Form.Control 
-                                as="textarea" 
-                                rows={3} 
+                            <Form.Label>
+                                Description <span className="text-danger">*</span><br />
+                                <small className="text-muted" style={{ fontSize: '0.75em' }}>Keep or re-word the description of what this subscription really is.</small></Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
                                 value={description}
                                 onChange={(e) => onDescriptionChange(e.target.value)}
                                 isInvalid={!description.trim()}
-                                required 
+                                required
                             />
                             <Form.Control.Feedback type="invalid">
                                 Please enter a description
@@ -164,71 +236,71 @@ const SubscriptionFinder: React.FC<Props> = ({
                         {uniqueIcons.length > 0 ? (
                             <>
                                 <Form.Control type="hidden" value={selectedIcon || ''} />
-                                <h6>Select an Icon</h6>
-                                <Carousel 
-                                    indicators={false} 
-                                    controls={true} 
+                                <h6 style={{ "marginBottom": "0.5rem" }}>Select an Icon</h6>
+                                <small className="text-muted mb-3 d-block" style={{ fontSize: '0.75em' }}>Shorten this name to the simple brand name. (e.g. "Costco", "Walmart+", etc)</small>
+                                <Carousel
+                                    indicators={false}
+                                    controls={true}
                                     interval={null}
                                     className="bg-body-tertiary rounded p-3 border"
-                                    style={{ minHeight: '120px' }}  // Increased from 100px
+                                    style={{ height: '140px', display: 'flex', alignItems: 'center' }}
                                 >
                                     {chunk(uniqueIcons, 4).map((iconGroup, groupIndex) => (
                                         <Carousel.Item key={groupIndex}>
-                                            <div className="d-flex justify-content-center gap-2">
+                                            <div className="d-flex justify-content-center gap-3 align-items-center">
                                                 {iconGroup.map((icon, index) => (
-                                                    <div 
+                                                    <div
                                                         key={index}
                                                         className="position-relative"
                                                         onClick={() => handleIconClick(icon)}
-                                                        style={{ cursor: 'pointer' }}
+                                                        style={{
+                                                            cursor: 'pointer',
+                                                            width: '96px',
+                                                            height: '96px',
+                                                            margin: '16px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            backgroundColor: 'var(--bs-body-bg)',
+                                                            border: selectedIcon === icon ? '2px solid var(--bs-primary)' : '1px solid var(--bs-border-color)',
+                                                            borderRadius: '8px',
+                                                            padding: '12px' // Add padding to prevent icons from touching borders
+                                                        }}
                                                     >
-                                                        <div 
-                                                            className="position-relative bg-body rounded p-2"
+                                                        <img
+                                                            src={icon}
+                                                            alt={`Icon ${index + 1}`}
                                                             style={{
-                                                                width: '48px',
-                                                                height: '48px',
-                                                                marginTop: '10px',
-                                                                marginBottom: '10px',
-                                                                marginRight: '15px', // Add space for checkmark
-                                                                border: `2px solid var(--bs-border-color)`,
-                                                                transition: 'all 0.2s ease-in-out',
-                                                                transform: selectedIcon === icon ? 'scale(1.1)' : 'scale(1)',
-                                                                boxShadow: selectedIcon === icon ? '0 0 0 2px var(--bs-primary)' : 'none'
+                                                                minWidth: '48px',
+                                                                minHeight: '48px',
+                                                                maxWidth: '64px',
+                                                                maxHeight: '64px',
+                                                                width: '80%',
+                                                                height: '80%',
+                                                                objectFit: 'contain'
                                                             }}
-                                                        >
-                                                            <img 
-                                                                src={icon}
-                                                                alt={`Icon ${groupIndex * 4 + index + 1}`}
-                                                                className="d-block w-100 h-100"
-                                                                style={{ objectFit: 'contain' }}
-                                                            />
-                                                            {selectedIcon === icon && (
-                                                                <div 
-                                                                    className="position-absolute"
-                                                                    style={{
-                                                                        top: '-8px',
-                                                                        right: '-8px',
-                                                                        background: 'var(--bs-success)',
-                                                                        borderRadius: '50%',
-                                                                        width: '20px',
-                                                                        height: '20px',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center',
-                                                                        border: '2px solid var(--bs-body-bg)',
-                                                                        boxShadow: '0 0 0 2px var(--bs-success)'
-                                                                    }}
-                                                                >
-                                                                    <FontAwesomeIcon 
-                                                                        icon={faCheckCircle} 
-                                                                        style={{
-                                                                            fontSize: '0.9em',
-                                                                            color: 'var(--bs-body-bg)'
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                        />
+                                                        {selectedIcon === icon && (
+                                                            <div
+                                                                className="position-absolute bg-primary rounded-circle"
+                                                                style={{
+                                                                    top: '-12px',
+                                                                    left: '-12px',
+                                                                    width: '24px',
+                                                                    height: '24px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    zIndex: 1
+                                                                }}
+                                                            >
+                                                                <FontAwesomeIcon
+                                                                    icon={faCheckCircle}
+                                                                    className="text-white"
+                                                                    style={{ fontSize: '14px' }}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>

@@ -1,21 +1,44 @@
 import { DOMParser } from 'https://deno.land/x/deno_dom/deno-dom-wasm.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 
-console.log(`Function "browser-with-cors" up and running!`);
-
 function normalizeUrl(input: string): string {
   try {
-    // Add protocol if missing
+    console.log('Attempting to normalize URL:', input);
+
     if (!input.startsWith('http://') && !input.startsWith('https://')) {
       input = 'https://' + input;
     }
     
     const url = new URL(input);
-    // Get base domain without path/params
+    
+    console.log('Normalized URL:', url.protocol + '//' + url.hostname);
     return url.protocol + '//' + url.hostname;
   } catch (e) {
+    console.error('Failed to normalize URL:', input, e);
     throw new Error('Invalid URL format');
   }
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout: number = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(url, { ...options, signal: controller.signal });
+  clearTimeout(id);
+  return response;
+}
+
+async function fetchWithRedirects(url: string, maxRedirects: number = 5, timeout: number = 10000): Promise<Response> {
+  let response = await fetchWithTimeout(url, {}, timeout);
+  let redirects = 0;
+
+  while ((response.status === 301 || response.status === 302) && redirects < maxRedirects) {
+    const location = response.headers.get('location');
+    if (!location) break;
+    response = await fetchWithTimeout(location, {}, timeout);
+    redirects++;
+  }
+
+  return response;
 }
 
 Deno.serve(async (req) => {
@@ -35,7 +58,7 @@ Deno.serve(async (req) => {
 
   try {
     const normalizedUrl = normalizeUrl(urlInput);
-    const response = await fetch(normalizedUrl);
+    const response = await fetchWithRedirects(normalizedUrl);
     const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -55,6 +78,7 @@ Deno.serve(async (req) => {
           return href ? new URL(href, normalizedUrl).href : null;
         })
         .filter(Boolean),
+      website: normalizedUrl
     };
 
     return new Response(JSON.stringify(metadata), {
