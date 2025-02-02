@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Badge, Offcanvas, Form, InputGroup, Alert, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faThLarge, faList, faSearch, faSort, faHandHoldingDollar, faSquarePlus, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faQuestion, faXmark, faFilter, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faPlus, faThLarge, faList, faSearch, faSort, faHandHoldingDollar, faSquarePlus, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faQuestion, faXmark, faFilter, faCheck, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
 import SubscriptionCard from '../components/SubscriptionCard';
@@ -325,8 +325,8 @@ const MySubscriptions = () => {
                             onClick={() => setShowFilters(!showFilters)}
                             className="d-flex align-items-center position-relative"
                         >
-                            <FontAwesomeIcon icon={faFilter} className="me-2" />
-                            Filters
+                            <FontAwesomeIcon icon={faFilter} />
+                            <span className="d-none d-sm-inline ms-2">Filters</span>
                             {(excludedStates.length > 0 || excludedCategories.length > 0) && (
                                 <span
                                     className="position-absolute translate-middle badge rounded-pill bg-danger"
@@ -371,7 +371,7 @@ const MySubscriptions = () => {
                                         <div className="col-md-4">
                                             <Form.Label>
                                                 Exclude States<br />
-                                                <small className="text-muted">Exclude certain subscription States from the current view.</small>
+                                                <small className="text-muted">Exclude subscription States from the current view.</small>
                                             </Form.Label>
                                             <Select
                                                 isMulti
@@ -389,8 +389,8 @@ const MySubscriptions = () => {
                                         <div className="col-md-4">
                                             <Form.Label>
                                                 Exclude Categories<br />
-                                                <small className="text-muted">Exclude certain subscription Categories from the current view.</small>
-                                                </Form.Label>
+                                                <small className="text-muted">Exclude Categories from the current view.</small>
+                                            </Form.Label>
                                             <Select
                                                 isMulti
                                                 value={getUniqueCategories(subscriptions)
@@ -409,7 +409,7 @@ const MySubscriptions = () => {
                                             <Form.Label>
                                                 Sort By<br />
                                                 <small className="text-muted">Sort your subscriptions, in the current view.</small>
-                                                </Form.Label>
+                                            </Form.Label>
                                             <Form.Select
                                                 value={sortOrder}
                                                 onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
@@ -425,16 +425,31 @@ const MySubscriptions = () => {
                                             </Form.Select>
                                         </div>
                                     </div>
-                                    <div className="d-flex justify-content-end mt-3">
-                                        <Button
-                                            variant="primary"
-                                            onClick={() => setShowFilters(false)}
-                                        >
-                                            <FontAwesomeIcon icon={faCheck} className="me-2" />
-                                            Apply Filters
-                                        </Button>
-                                    </div>
                                 </Card.Body>
+                                <Card.Footer className="d-flex justify-content-end">
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => {
+                                            setExcludedStates([]);
+                                            setExcludedCategories([]);
+                                            setSortOrder('name');
+                                            setShowFilters(false);
+                                        }}
+                                        className="me-2"
+                                    >
+                                        <FontAwesomeIcon icon={faRotateLeft} className="me-2" />
+                                        Reset All
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => setShowFilters(false)}
+                                    >
+                                        <FontAwesomeIcon icon={faCheck} className="me-2" />
+                                        Apply Filters
+                                    </Button>
+                                </Card.Footer>
                             </Card>
                         </div>
                     </Collapse>

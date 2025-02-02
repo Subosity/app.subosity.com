@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Spinner } from 'react-bootstrap';
+import { Card, Row, Col, Spinner, Button, Collapse, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChartPie,
@@ -9,7 +9,15 @@ import {
   faRotate,
   faHand,
   faMoneyBillWave,
-  faCheckSquare
+  faCheckSquare,
+  faFilter,
+  faClock,
+  faCheckCircle,
+  faBan,
+  faTimesCircle,
+  faPause,
+  faRotateLeft,
+  faCheck
 } from '@fortawesome/free-solid-svg-icons';
 import { Pie, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale } from 'chart.js';
@@ -17,7 +25,8 @@ import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { getOccurrencesCountInRange } from '../utils/recurrenceUtils';
-
+import Select from 'react-select';
+import { selectStyles } from '../styles/selectStyles';
 
 // Register ChartJS components
 ChartJS.register(
@@ -43,9 +52,33 @@ const Dashboard: React.FC = () => {
     stateDistribution: {}
   });
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [excludedStates, setExcludedStates] = useState<string[]>([]);
+  const [excludedCategories, setExcludedCategories] = useState<string[]>([]);
+
+  const stateFilterOptions = [
+    { value: 'trial', label: 'Trial', icon: faClock },
+    { value: 'active', label: 'Active', icon: faCheckCircle },
+    { value: 'canceled', label: 'Canceled', icon: faBan },
+    { value: 'expired', label: 'Expired', icon: faTimesCircle },
+    { value: 'paused', label: 'Paused', icon: faPause }
+  ];
+
+  const getUniqueCategories = (subs: any[]): string[] => {
+    return [...new Set(subs
+      .map(sub => sub.subscription_provider?.category)
+      .filter(Boolean)
+      .sort()
+    )];
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []); // Simplified dependency array
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [excludedStates, excludedCategories]);
 
   // Add this helper function at the top of the component
   const getComputedColor = (cssVar: string) => {
@@ -139,13 +172,23 @@ const Dashboard: React.FC = () => {
         return;
       }
 
-      // Get ALL subscriptions with their latest state from history
+      // Get ALL subscriptions first, similar to MySubscriptions
       const { data: subscriptions, error } = await supabase
         .from('subscription')
         .select(`
           *,
-          subscription_provider:subscription_provider_id(category, name),
-          payment_provider:payment_provider_id(name),
+          subscription_provider:subscription_provider_id(
+            id,
+            name,
+            description,
+            category,
+            icon
+          ),
+          payment_provider:payment_provider_id(
+            id,
+            name,
+            icon
+          ),
           subscription_history!inner(
             state,
             start_date,
@@ -155,34 +198,36 @@ const Dashboard: React.FC = () => {
         .eq('owner', user.id)
         .is('subscription_history.end_date', null);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
+      if (!subscriptions) return;
 
-      if (!subscriptions) {
-        setLoading(false);
-        return;
-      }
-
-      // Filter active subscriptions for cost calculations
+      // Filter subscriptions using the same logic as MySubscriptions
       const activeSubscriptions = subscriptions.filter(sub => 
-        ['active', 'trial'].includes(sub.subscription_history[0]?.state)
+        !excludedStates.includes(sub.subscription_history[0]?.state) &&
+        !excludedCategories.includes(sub.subscription_provider?.category)
       );
 
+      // Calculate stats using filtered data
+      // const activeSubscriptions = filteredSubscriptions.filter(sub => 
+      //   ['active', 'trial'].includes(sub.subscription_history[0]?.state)
+      // );
+
+      // Process data for charts
       const categories = {};
       const paymentProviders = {};
       
+      let yearlyTotal = 0;
       const now = new Date();
       const endOfYear = new Date(now.getFullYear(), 11, 31);
       
-      let yearlyTotal = 0;
       activeSubscriptions.forEach(sub => {
+        // Calculate costs
         const amount = sub.amount || 0;
         const yearOccurrences = getOccurrencesCountInRange(sub.recurrence_rule, now, endOfYear);
         const yearCost = yearOccurrences * amount;
         yearlyTotal += yearCost;
         
+        // Aggregate categories and payment providers
         const category = sub.subscription_provider?.category || 'Unknown';
         categories[category] = (categories[category] || 0) + 1;
         
@@ -273,11 +318,108 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="container py-4">
-      <h3 className="mb-4 text-body">
-        <FontAwesomeIcon icon={faChartPie} className="me-2" />
-        Dashboard Overview
-      </h3>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3 className="mb-0 text-body">
+          <FontAwesomeIcon icon={faChartPie} className="me-2" />
+          Dashboard Overview
+        </h3>
+        
+        <Button
+          variant={showFilters ? 'primary' : 'outline-primary'}
+          onClick={() => setShowFilters(!showFilters)}
+          className="d-flex align-items-center position-relative"
+        >
+          <FontAwesomeIcon icon={faFilter} />
+          <span className="d-none d-sm-inline ms-2">Filters</span>
+          {(excludedStates.length > 0 || excludedCategories.length > 0) && (
+            <span
+              className="position-absolute translate-middle badge rounded-pill bg-danger"
+              style={{
+                fontSize: '0.65em',
+                top: -2,
+                right: -2,
+                padding: '0.35em 0.5em'
+              }}
+            >
+              {excludedStates.length + excludedCategories.length}
+              <span className="visually-hidden">active filters</span>
+            </span>
+          )}
+        </Button>
+      </div>
 
+      <Collapse in={showFilters}>
+        <div>
+          <Card className="mb-4 shadow-sm" style={{
+            backgroundColor: 'var(--bs-body-bg)',
+            borderColor: 'var(--bs-border-color)'
+          }}>
+            <Card.Body>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <Form.Label>
+                    Exclude States<br />
+                    <small className="text-muted">Exclude subscription States from the dashboard.</small>
+                  </Form.Label>
+                  <Select
+                    isMulti
+                    value={stateFilterOptions.filter(option =>
+                      excludedStates.includes(option.value)
+                    )}
+                    onChange={(selected) => {
+                      setExcludedStates(selected ? selected.map(option => option.value) : []);
+                    }}
+                    options={stateFilterOptions}
+                    placeholder="Select states to exclude..."
+                    styles={selectStyles}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <Form.Label>
+                    Exclude Categories<br />
+                    <small className="text-muted">Exclude Categories from the dashboard.</small>
+                  </Form.Label>
+                  <Select
+                    isMulti
+                    value={excludedCategories.map(cat => ({ value: cat, label: cat }))}
+                    onChange={(selected) => {
+                      setExcludedCategories(selected ? selected.map(option => option.value) : []);
+                    }}
+                    options={stats.categoryData.labels
+                      .map(cat => ({ value: cat, label: cat }))}
+                    placeholder="Select categories to exclude..."
+                    styles={selectStyles}
+                  />
+                </div>
+              </div>
+            </Card.Body>
+            <Card.Footer className="d-flex justify-content-end">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setExcludedStates([]);
+                  setExcludedCategories([]);
+                  setShowFilters(false);
+                }}
+                className="me-2"
+              >
+                <FontAwesomeIcon icon={faRotateLeft} className="me-2" />
+                Reset All
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowFilters(false)}
+              >
+                <FontAwesomeIcon icon={faCheck} className="me-2" />
+                Apply Filters
+              </Button>
+            </Card.Footer>
+          </Card>
+        </div>
+      </Collapse>
+      
       {loading ? (
         <div className="text-center mt-5">
           <Spinner animation="border" role="status">
