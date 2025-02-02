@@ -50,23 +50,39 @@ const Footer = () => {
       style={{ 
         backgroundColor: 'var(--bs-footer-bg)', 
         color: 'var(--bs-footer-color)',
-        fontSize: '.75em' }}>
+        fontSize: '.75em' 
+      }}>
       <div className="container">
-        <div className="text-center">
+        {/* Mobile Layout (default) */}
+        <div className="d-md-none">
+          <div className="text-center mb-2">
+            <Link to="/terms" className="text-decoration-none">Terms of Use</Link>
+            <span className="mx-2">|</span>
+            <Link to="/privacy" className="text-decoration-none">Privacy Policy</Link>
+          </div>
+          <div className="text-center">
+            <span>Copyright © 2025 Subosity</span>
+            {versionInfo.show && (
+              <span className="d-none d-sm-inline">
+                <span className="mx-2">|</span>
+                <span>{versionInfo.text}</span>
+              </span>
+            )}
+          </div>
+        </div>
+    
+        {/* Desktop Layout */}
+        <div className="d-none d-md-block text-center">
           <span>Copyright © 2025 Subosity</span>
           <span className="mx-2">|</span>
-          <Link to="/terms" className="text-decoration-none">
-            Terms of Use
-          </Link>
+          <Link to="/terms" className="text-decoration-none">Terms of Use</Link>
           <span className="mx-2">|</span>
-          <Link to="/privacy" className="text-decoration-none">
-            Privacy Policy
-          </Link>
+          <Link to="/privacy" className="text-decoration-none">Privacy Policy</Link>
           {versionInfo.show && (
-            <>
+            <span className="d-none d-sm-inline">
               <span className="mx-2">|</span>
               <span>{versionInfo.text}</span>
-            </>
+            </span>
           )}
         </div>
       </div>
