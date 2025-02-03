@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import md5 from 'md5'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -35,6 +35,7 @@ const Navigation: React.FC = () => {
     const { unreadCount } = useAlerts(); // Get unread count from context
     const [showAlerts, setShowAlerts] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const navbarToggleRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -57,6 +58,12 @@ const Navigation: React.FC = () => {
         setTheme(themes[nextIndex]);
     };
 
+    const closeNavbar = () => {
+        if (navbarToggleRef.current?.classList.contains('collapsed') === false) {
+            navbarToggleRef.current?.click();
+        }
+    };
+
     return (
         <Navbar expand="lg" className={`navbar-${isDarkMode ? 'dark' : 'light'} bg-${isDarkMode ? 'dark' : 'light'}`}>
             <Container>
@@ -65,21 +72,21 @@ const Navigation: React.FC = () => {
                     <span>Subosity</span>
                 </Navbar.Brand>
 
-                <Navbar.Toggle aria-controls="navbar-nav" />
+                <Navbar.Toggle ref={navbarToggleRef} aria-controls="navbar-nav" />
 
                 <Navbar.Collapse id="navbar-nav">
                     {user && (
                         <Nav className="me-auto navbar-nav">
 
-                            <Nav.Link as={Link} to="/">
+                            <Nav.Link as={Link} to="/" onClick={closeNavbar}>
                                 <FontAwesomeIcon icon={faDashboard} className="me-2" />
                                 Dashboard
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/mysubscriptions">
+                            <Nav.Link as={Link} to="/mysubscriptions" onClick={closeNavbar}>
                                 <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
                                 Subscriptions
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/calendar">
+                            <Nav.Link as={Link} to="/calendar" onClick={closeNavbar}>
                                 <FontAwesomeIcon icon={faCalendar} className="me-2" />
                                 Calendar
                             </Nav.Link>
@@ -87,81 +94,112 @@ const Navigation: React.FC = () => {
                         </Nav>
                     )}
 
-                    <Nav className="navbar-nav d-flex align-items-center ms-auto">
+                    <Nav className="navbar-nav align-items-center ms-lg-auto">
                         {user && (
-                            <div className="position-relative me-3">
-                                <Button
-                                    variant="link"
-                                    className="nav-link p-0"
-                                    onClick={() => setShowAlerts(true)}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faBell}
-                                        className={unreadCount > 0 ? "text-warning" : "text-body-secondary"}
-                                    />
-                                    {unreadCount > 0 && (
-                                        <span
-                                            className="position-absolute badge rounded-pill bg-danger d-flex align-items-center justify-content-center"
-                                            style={{
-                                                fontSize: '0.75em',
-                                                padding: '0.75em 0.6em 1.0em 0.5em',
-                                                minWidth: '1.5em',
-                                                height: '1.5em',
-                                                transform: 'scale(0.8) translate(50%, -50%)',
-                                                top: '0',
-                                                right: '0'
-                                            }}
+                            <>
+                                {/* Hide in mobile, show in desktop */}
+                                <div className="d-none d-lg-flex align-items-center">
+                                    <Nav.Link
+                                        as={Button}
+                                        variant="link"
+                                        className="position-relative p-2"
+                                        onClick={() => setShowAlerts(true)}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faBell}
+                                            className={`${unreadCount > 0 ? "text-warning" : "text-body-secondary"} me-2`}
+                                        />
+                                        Alerts
+                                        {unreadCount > 0 && (
+                                            <span
+                                                className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                style={{ fontSize: '0.65em' }}
+                                            >
+                                                {unreadCount}
+                                                <span className="visually-hidden">unread alerts</span>
+                                            </span>
+                                        )}
+                                    </Nav.Link>
+
+                                    <Dropdown align="end">
+                                        <Dropdown.Toggle
+                                            as={Nav.Link}
+                                            id="user-dropdown-desktop"
+                                            className="d-flex align-items-center p-2"
                                         >
-                                            {unreadCount}
-                                            <span className="visually-hidden">unread alerts</span>
-                                        </span>
-                                    )}
-                                </Button>
-                            </div>
-                        )}
-                        {user ? (
-                            <Dropdown align="end">
-                                <Dropdown.Toggle variant="link" className="nav-link d-flex align-items-center gap-2">
-                                    <UserAvatar email={user?.email} size={32} />
-                                </Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item as={Link} to="/profile">
+                                            <UserAvatar email={user?.email} size={32} />
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu className="dropdown-menu-end shadow-sm">
+                                            <Dropdown.Item as={Link} to="/profile">
+                                                <FontAwesomeIcon icon={faUser} className="me-2" />
+                                                My Account
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/preferences">
+                                                <FontAwesomeIcon icon={faGear} className="me-2" />
+                                                Preferences
+                                            </Dropdown.Item>
+                                            <Dropdown.Item onClick={cycleTheme}>
+                                                <FontAwesomeIcon icon={getThemeIcon()} className="me-2" />
+                                                Theme ({theme})
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider />
+                                            <Dropdown.Item onClick={logout}>
+                                                <FontAwesomeIcon icon={faUser} className="me-2" />
+                                                Logout
+                                            </Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </div>
+
+                                {/* Show in mobile, hide in desktop */}
+                                <div className="d-lg-none w-100">
+                                    <Nav.Link onClick={() => { setShowAlerts(true); closeNavbar(); }} className="w-100">
+                                        <FontAwesomeIcon icon={faBell} className="me-2" />
+                                        Alerts {unreadCount > 0 && `(${unreadCount})`}
+                                    </Nav.Link>
+                                    <hr className="my-2 opacity-25" />
+                                    <Nav.Link as={Link} to="/profile" className="w-100" onClick={closeNavbar}>
                                         <FontAwesomeIcon icon={faUser} className="me-2" />
                                         My Account
-                                    </Dropdown.Item>
-                                    <Dropdown.Item as={Link} to="/preferences">
+                                    </Nav.Link>
+                                    <Nav.Link as={Link} to="/preferences" className="w-100" onClick={closeNavbar}>
                                         <FontAwesomeIcon icon={faGear} className="me-2" />
                                         Preferences
-                                    </Dropdown.Item>
-                                    <Dropdown.Item onClick={cycleTheme}>
+                                    </Nav.Link>
+                                    <Nav.Link onClick={() => { cycleTheme(); closeNavbar(); }} className="w-100">
                                         <FontAwesomeIcon icon={getThemeIcon()} className="me-2" />
                                         Theme ({theme})
-                                    </Dropdown.Item>
-                                    <Dropdown.Divider />
-                                    <Dropdown.Item onClick={logout}>
+                                    </Nav.Link>
+                                    <hr className="my-2 opacity-25" />
+                                    <Nav.Link onClick={() => { logout(); closeNavbar(); }} className="w-100 text-danger">
                                         <FontAwesomeIcon icon={faUser} className="me-2" />
                                         Logout
-                                    </Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        ) : (
+                                    </Nav.Link>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Non-authenticated menu items remain the same */}
+                        {!user && (
                             <>
-                                <Button
-                                    variant="link"
-                                    className="nav-link"
-                                    onClick={cycleTheme}
-                                >
-                                    <FontAwesomeIcon icon={getThemeIcon()} className="me-2" />
-                                    Theme
-                                </Button>
-                                <div className="ms-2 me-2">|</div>
-                                <Nav.Link as={Link} to="/signup">
-                                    <FontAwesomeIcon icon={faUserPlus} className="me-2" />
-                                    Sign Up</Nav.Link>
-                                <div className="ms-2 me-2">|</div>
-                                <Nav.Link as={Link} to="/login">
-                                    <FontAwesomeIcon icon={faSignIn} className="me-2" />
-                                    Login</Nav.Link>
+                                <Nav.Item>
+                                    <Nav.Link onClick={() => { cycleTheme(); closeNavbar(); }}>
+                                        <FontAwesomeIcon icon={getThemeIcon()} className="me-2" />
+                                        Theme
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link as={Link} to="/signup" onClick={closeNavbar}>
+                                        <FontAwesomeIcon icon={faUserPlus} className="me-2" />
+                                        Sign Up
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link as={Link} to="/login" onClick={closeNavbar}>
+                                        <FontAwesomeIcon icon={faSignIn} className="me-2" />
+                                        Login
+                                    </Nav.Link>
+                                </Nav.Item>
                             </>
                         )}
                     </Nav>
