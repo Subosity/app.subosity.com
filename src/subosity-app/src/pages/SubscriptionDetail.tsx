@@ -235,8 +235,8 @@ const SubscriptionDetail: React.FC = () => {
                                     {subscription.nickname && (
                                         <div className="text-muted mb-2">({subscription.nickname})</div>
                                     )}
-                                    <div className='text-muted' style={{fontSize: '0.85em'}}>
-                                    {subscription.providerDescription}
+                                    <div className='text-muted' style={{ fontSize: '0.85em' }}>
+                                        {subscription.providerDescription}
                                     </div>
                                     <Badge bg={subscription.autoRenewal ? 'success' : 'secondary'}>
                                         <FontAwesomeIcon
@@ -260,63 +260,67 @@ const SubscriptionDetail: React.FC = () => {
                         </div>
 
                         <Card className="mb-4 shadow p-3">
-                        <dl className="row">
-                            <dt className="col-sm-3">Category</dt>
-                            <dd className="col-sm-9">{subscription.providerCategory || 'Unknown Category'}</dd>
+                            <dl className="row">
+                                <dt className="col-sm-3">Category</dt>
+                                <dd className="col-sm-9">{subscription.providerCategory || 'Unknown Category'}</dd>
 
-                            <dt className="col-sm-3">Amount</dt>
-                            <dd className="col-sm-9">${subscription.amount.toFixed(2)} /
-                                <RecurrenceComponent
-                                    subscription={subscription}
-                                    mode="text"
-                                />
-                                &nbsp;
-                                <RecurrenceComponent
-                                    subscription={subscription}
-                                    mode="badge"
-                                    thresholds={{ warning: 20, urgent: 10 }}
-                                />
-                            </dd>
-
-                            <dt className="col-sm-3">Start Date</dt>
-                            <dd className="col-sm-9">
-                                {subscription.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Not specified'}
-                            </dd>
-
-                            <dt className="col-sm-3">Payment Method</dt>
-                            <dd className="col-sm-9">
-                                <div className="d-flex align-items-center">
-                                    <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
-                                        <img
-                                            src={subscription.paymentProviderIcon}
-                                            alt={subscription.paymentProviderName}
-                                            style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                                <dt className="col-sm-3">Amount</dt>
+                                <dd className="col-sm-9">
+                                    <span className="me-2">
+                                        ${subscription.amount.toFixed(2)}
+                                    </span>
+                                    <span className="me-2">
+                                        <RecurrenceComponent
+                                            subscription={subscription}
+                                            mode="text"
                                         />
+                                    </span>
+                                    <RecurrenceComponent
+                                        subscription={subscription}
+                                        mode="badge"
+                                        thresholds={{ warning: 20, urgent: 10 }}
+                                    />
+                                </dd>
+
+                                <dt className="col-sm-3">Start Date</dt>
+                                <dd className="col-sm-9">
+                                    {subscription.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Not specified'}
+                                </dd>
+
+                                <dt className="col-sm-3">Payment Method</dt>
+                                <dd className="col-sm-9">
+                                    <div className="d-flex align-items-center">
+                                        <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
+                                            <img
+                                                src={subscription.paymentProviderIcon}
+                                                alt={subscription.paymentProviderName}
+                                                style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                                            />
+                                        </div>
+                                        {subscription.paymentDetails}
                                     </div>
-                                    {subscription.paymentDetails}
-                                </div>
-                            </dd>
+                                </dd>
 
-                            {subscription.notes && (
-                                <>
-                                    <dt className="col-sm-3">Notes</dt>
-                                    <dd className="col-sm-9">{subscription.notes}</dd>
-                                </>
-                            )}
+                                {subscription.notes && (
+                                    <>
+                                        <dt className="col-sm-3">Notes</dt>
+                                        <dd className="col-sm-9">{subscription.notes}</dd>
+                                    </>
+                                )}
 
-                            <dt className="col-sm-3">Unsubscribe</dt>
-                            <dd className="col-sm-9">
-                                <Button
-                                    variant="link"
-                                    href={subscription.providerUnsubscribeUrl}
-                                    target="_blank"
-                                    className="p-0"
-                                >
-                                    <FontAwesomeIcon icon={faLink} className="me-2" />
-                                    View unsubscribe instructions
-                                </Button>
-                            </dd>
-                        </dl>
+                                <dt className="col-sm-3">Unsubscribe</dt>
+                                <dd className="col-sm-9">
+                                    <Button
+                                        variant="link"
+                                        href={subscription.providerUnsubscribeUrl}
+                                        target="_blank"
+                                        className="p-0"
+                                    >
+                                        <FontAwesomeIcon icon={faLink} className="me-2" />
+                                        View unsubscribe instructions
+                                    </Button>
+                                </dd>
+                            </dl>
                         </Card>
                         <div className="d-flex justify-content-end">
                             <SubscriptionStateDisplay

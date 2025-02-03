@@ -52,3 +52,32 @@
 .theme-dark .rbc-month-row + .rbc-month-row {
     border-color: #495057;
 }
+
+
+
+/* Hide the hours in the week view */
+.rbc-time-content {
+    display: none;
+}
+
+/* Expand the all-day events section */
+.rbc-allday-cell {
+    height: calc(100vh - 280px) !important; /* Adjust the height as needed */
+}
+
+.rbc-allday-events {
+    height: 100% !important; /* Adjust the height as needed */
+    overflow-y: auto; /* Add scroll if there are many events */
+}
+
+/* Hide the hours in the week view */
+.week-view .rbc-time-content {
+    display: none;
+}
+
+/* Expand the all-day events section */
+.week-view .rbc-allday-cell,
+.week-view .rbc-allday-events {
+    height: 400px; /* Adjust the height as needed */
+    overflow-y: auto; /* Add scroll if there are many events */
+}

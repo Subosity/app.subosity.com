@@ -42,6 +42,7 @@ const CalendarPage: React.FC = () => {
     const { theme } = useTheme();
     const isDarkMode = theme === 'Dark' || (theme === 'Auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     const { addToast } = useToast();
+        const [currentView, setCurrentView] = useState<View>('month');
 
     const fetchSubscriptionEvents = async (start: Date) => {
         const { data: subscriptions, error } = await supabase
@@ -200,7 +201,7 @@ const CalendarPage: React.FC = () => {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                className={`calendar-container ${isDarkMode ? 'theme-dark' : 'theme-light'}`}
+                className={`calendar-container ${isDarkMode ? 'theme-dark' : 'theme-light'} ${currentView === 'week' ? 'week-view' : ''}`}
                 style={{
                     backgroundColor: 'var(--bs-body-bg)',
                     color: 'var(--bs-body-color)'
@@ -211,6 +212,7 @@ const CalendarPage: React.FC = () => {
                     setCurrentDate(date);
                     fetchSubscriptionEvents(date);
                 }}
+                onView={(view) => setCurrentView(view)}
                 onSelectEvent={handleSelectEvent}
                 onShowMore={handleShowMore}
                 onSelectSlot={handleSelectSlot}
