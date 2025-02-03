@@ -19,8 +19,6 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
     const navigate = useNavigate();
     const [alertCount, setAlertCount] = useState(0);
     const { getUnreadCountForSubscription } = useAlerts();
-    const [containerWidth, setContainerWidth] = useState(0);
-    const detailsRef = useRef<HTMLDivElement>(null);
 
     const handleItemClick = (e: React.MouseEvent) => {
         // Prevent navigation if clicking on action buttons
@@ -37,19 +35,6 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
         };
         fetchAlertCount();
     }, [subscription.id]);
-
-    useEffect(() => {
-        if (!detailsRef.current) return;
-
-        const resizeObserver = new ResizeObserver(entries => {
-            for (const entry of entries) {
-                setContainerWidth(entry.contentRect.width);
-            }
-        });
-
-        resizeObserver.observe(detailsRef.current);
-        return () => resizeObserver.disconnect();
-    }, []);
 
     return (
         <div
@@ -108,10 +93,12 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
 
             {/* Main Content Column */}
             <div className="d-flex flex-column flex-grow-1 min-width-0 me-2">
-                <div className="d-flex flex-column overflow-hidden">
-                    <span className="fw-medium text-truncate mb-1">
-                        {subscription.providerName}
-                    </span>
+                <div className="d-flex flex-column overflow-hidden min-width-0">
+                    <div className="">
+                        <span className="fw-medium text-truncate mb-1">
+                            {subscription.providerName}
+                        </span>
+                    </div>
 
                     <div className="provider-description-container">
                         <span className="text-body-secondary text-truncate mb-1 d-none d-sm-inline provider-description">
