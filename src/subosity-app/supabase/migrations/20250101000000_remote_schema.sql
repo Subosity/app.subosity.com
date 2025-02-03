@@ -187,14 +187,24 @@ CREATE TABLE IF NOT EXISTS "public"."payment_provider_comments" (
 ALTER TABLE "public"."payment_provider_comments" OWNER TO "postgres";
 
 
-CREATE TABLE IF NOT EXISTS "public"."preferences" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "owner" "uuid" NOT NULL,
-    "title" "text" NOT NULL,
+CREATE TABLE IF NOT EXISTS "public"."preference_system_defaults" (
     "preference_key" "text" NOT NULL,
-    "data_type" "text" NOT NULL,
+    "preference_description" "text" NOT NULL,
+    "preference_data_type" "text" NOT NULL,
     "available_values" "text"[],
-    "preference_value" "text"
+    "preference_value" "text",
+    "preference_jsonb" "jsonb" DEFAULT '{}'::"jsonb"
+);
+
+
+ALTER TABLE "public"."preference_system_defaults" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."preferences" (
+    "owner" "uuid" NOT NULL,
+    "preference_key" "text" NOT NULL,
+    "preference_value" "text",
+    "preference_jsonb" "jsonb" DEFAULT '{}'::"jsonb"
 );
 
 
@@ -308,8 +318,13 @@ ALTER TABLE ONLY "public"."payment_provider"
 
 
 
+ALTER TABLE ONLY "public"."preference_system_defaults"
+    ADD CONSTRAINT "preference_system_defaults_pkey" PRIMARY KEY ("preference_key");
+
+
+
 ALTER TABLE ONLY "public"."preferences"
-    ADD CONSTRAINT "preferences_pkey" PRIMARY KEY ("id");
+    ADD CONSTRAINT "preferences_pkey" PRIMARY KEY ("owner", "preference_key");
 
 
 
@@ -383,6 +398,11 @@ ALTER TABLE ONLY "public"."payment_provider"
 
 ALTER TABLE ONLY "public"."preferences"
     ADD CONSTRAINT "preferences_owner_fkey" FOREIGN KEY ("owner") REFERENCES "auth"."users"("id");
+
+
+
+ALTER TABLE ONLY "public"."preferences"
+    ADD CONSTRAINT "preferences_preference_key_fkey" FOREIGN KEY ("preference_key") REFERENCES "public"."preference_system_defaults"("preference_key");
 
 
 
@@ -529,27 +549,6 @@ ALTER TABLE "public"."payment_provider" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."payment_provider_comments" ENABLE ROW LEVEL SECURITY;
 
 
-ALTER TABLE "public"."preferences" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "preferences_delete_owned" ON "public"."preferences" FOR DELETE USING (("owner" = "auth"."uid"()));
-
-
-
-CREATE POLICY "preferences_insert_with_owner" ON "public"."preferences" FOR INSERT WITH CHECK (("owner" = "auth"."uid"()));
-
-
-
-CREATE POLICY "preferences_select_owned_or_admin_ops" ON "public"."preferences" FOR SELECT USING ((("owner" = "auth"."uid"()) OR (EXISTS ( SELECT 1
-   FROM "public"."profiles"
-  WHERE (("profiles"."user_id" = "auth"."uid"()) AND ("profiles"."role" = ANY (ARRAY['admin'::"text", 'ops'::"text"])))))));
-
-
-
-CREATE POLICY "preferences_update_owned" ON "public"."preferences" FOR UPDATE USING (("owner" = "auth"."uid"())) WITH CHECK (("owner" = "auth"."uid"()));
-
-
-
 ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
 
 
@@ -630,13 +629,13 @@ CREATE POLICY "subscription_update_owned" ON "public"."subscription" FOR UPDATE 
 
 
 
---ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 CREATE PUBLICATION "supabase_realtime_messages_publication" WITH (publish = 'insert, update, delete, truncate');
 
 
---ALTER PUBLICATION "supabase_realtime_messages_publication" OWNER TO "supabase_admin";
+ALTER PUBLICATION "supabase_realtime_messages_publication" OWNER TO "supabase_admin";
 
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
@@ -865,6 +864,12 @@ GRANT ALL ON TABLE "public"."payment_provider" TO "service_role";
 GRANT ALL ON TABLE "public"."payment_provider_comments" TO "anon";
 GRANT ALL ON TABLE "public"."payment_provider_comments" TO "authenticated";
 GRANT ALL ON TABLE "public"."payment_provider_comments" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."preference_system_defaults" TO "anon";
+GRANT ALL ON TABLE "public"."preference_system_defaults" TO "authenticated";
+GRANT ALL ON TABLE "public"."preference_system_defaults" TO "service_role";
 
 
 
