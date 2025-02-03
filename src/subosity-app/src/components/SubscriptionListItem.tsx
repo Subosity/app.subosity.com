@@ -7,6 +7,7 @@ import { useAlerts } from '../AlertsContext';
 import { useNavigate } from 'react-router-dom';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
 import RecurrenceComponent from './RecurrenceComponent';
+import '../styles/subscriptionListItem.css';
 
 interface Props {
     subscription: Subscription;
@@ -52,24 +53,27 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
 
     return (
         <div
-            className="d-flex align-items-center p-3 border-bottom shadow"
+            className="d-flex p-3 border-bottom shadow position-relative"
             style={{
                 backgroundColor: 'var(--bs-body-bg)',
                 color: 'var(--bs-body-color)',
                 borderColor: 'var(--bs-border-color) !important',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minHeight: '80px'
             }}
             onClick={handleItemClick}
         >
-            {/* Column 1: Logo */}
-            <div style={{ width: '40px', flexShrink: 0 }} className="me-3">
-                <div className="rounded-circle bg-light d-flex align-items-center justify-content-center"
+            <div style={{ width: '32px', flexShrink: 0 }} className="me-3">
+                <div
+                    className="rounded-circle bg-light d-flex align-items-center justify-content-center mb-2"
                     style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '32px',
+                        height: '32px',
                         backgroundColor: 'var(--bs-white)',
                         overflow: 'hidden'
-                    }}>
+                    }}
+                    title={`${subscription.providerName}\n${subscription.providerDescription}`}
+                >
                     <img
                         src={subscription.providerIcon}
                         alt={subscription.providerName}
@@ -81,88 +85,15 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
                         }}
                     />
                 </div>
-            </div>
-
-            {/* Column 2: Subscription Details */}
-            <div className="flex-grow-1 min-width-0" ref={detailsRef}> {/* Remove me-3 */}
-                {/* Provider Name + Nickname */}
-                <div className="d-flex align-items-baseline min-width-0 pe-2"> {/* Add pe-2 for small buffer */}
-                    <span className="fw-medium text-truncate">
-                        {subscription.providerName}
-                    </span>
-                    {subscription.nickname && (
-                        <span className="ms-1 text-body-secondary text-truncate"
-                            style={{
-                                fontSize: '0.75em',
-                                maxWidth: `${Math.max(containerWidth * 0.5, 60)}px`,
-                                flexShrink: 1
-                            }}>
-                            ({subscription.nickname})
-                        </span>
-                    )}
-                </div>
-
-                {/* Description - Debug subscription object */}
-                {subscription.providerDescription && (
-                    <div className="text-body-secondary text-truncate mb-1 d-none d-md-block "
-                        style={{
-                            fontSize: '0.85em',
-                        }}>
-                        {subscription.providerDescription}
-                    </div>
-                )}
-
-                {/* Renewal and Amount Info */}
-                <div className="d-flex align-items-center gap-2 mt-1" style={{ fontSize: '0.85em' }}>
-                    <Badge
-                        bg={subscription.autoRenewal ? 'success' : 'secondary'}
-                        style={{
-                            whiteSpace: 'nowrap',
-                            minWidth: '110px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <FontAwesomeIcon
-                            icon={subscription.autoRenewal ? faRotate : faHand}
-                            className="me-1"
-                        />
-                        <span className="d-none d-lg-block">
-                            {subscription.autoRenewal ? 'Auto-Renewal' : 'Manual Renewal'}
-                        </span>
-                    </Badge>
-                    <style jsx>{`
-                        @media (max-width: 992px) {
-                            .badge {
-                                min-width: 0 !important;
-                            }
-                        }
-                    `}</style>
-                    <span className="text-truncate">${subscription.amount.toFixed(2)}</span>
-                    <RecurrenceComponent
-                        subscription={subscription}
-                        mode="badge"
-                        thresholds={{ warning: 20, urgent: 10 }}
-                    />
-                    <span className="d-none d-lg-block">
-                        <RecurrenceComponent
-                            subscription={subscription}
-                            mode="text"
-                        />
-                    </span>
-                </div>
-            </div>
-
-            {/* Column 3: Payment Method - Right aligned */}
-            <div className="d-flex flex-column align-items-end ps-2"
-                style={{ minWidth: '32px', flexShrink: 1 }}> {/* Add ps-2 */}
-                <div className="rounded bg-light d-flex align-items-center justify-content-center mb-1"
+                <div
+                    className="rounded bg-light d-flex align-items-center justify-content-center"
                     style={{
                         width: '32px',
                         height: '32px',
                         backgroundColor: 'var(--bs-white)'
-                    }}>
+                    }}
+                    title={`${subscription.paymentProviderName}\n${subscription.paymentDetails}`}
+                >
                     <img
                         src={subscription.paymentProviderIcon}
                         alt={subscription.paymentProviderName}
@@ -173,16 +104,59 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
                         }}
                     />
                 </div>
-                <span className="d-none d-md-block text-body-secondary text-end nowrap"
-                    style={{ fontSize: '0.75em', width: '100%' }}>
-                    {subscription.paymentDetails}
-                </span>
             </div>
 
-            {/* Column 4: Actions and Status */}
-            <div className="d-flex flex-column align-items-end"
-                style={{ width: '90px', flexShrink: 0 }}>
-                <div className="d-flex align-items-center gap-2 mb-1">
+            {/* Main Content Column */}
+            <div className="d-flex flex-column flex-grow-1 min-width-0 me-2">
+                <div className="d-flex flex-column overflow-hidden">
+                    <span className="fw-medium text-truncate mb-1">
+                        {subscription.providerName}
+                    </span>
+
+                    <div className="provider-description-container">
+                        <span className="text-body-secondary text-truncate mb-1 d-none d-sm-inline provider-description">
+                            {subscription.providerDescription}
+                        </span>
+                    </div>
+
+                    {subscription.nickname && (
+                        <span className="text-body-secondary text-truncate mb-1"
+                            style={{ fontSize: '0.85em', fontStyle: 'italic' }}>
+                            ({subscription.nickname})
+                        </span>
+                    )}
+                </div>
+
+                <div className="d-flex align-items-center gap-2" style={{ fontSize: '0.85em' }}>
+                    <FontAwesomeIcon
+                        icon={subscription.autoRenewal ? faRotate : faHand}
+                        className={subscription.autoRenewal ? "text-success" : "text-secondary"}
+                    />
+                    <span>${subscription.amount.toFixed(2)}</span>
+                </div>
+
+                <div className="mt-1">
+                    <RecurrenceComponent
+                        subscription={subscription}
+                        mode="badge"
+                        thresholds={{ warning: 20, urgent: 10 }}
+                    />
+                    <span className="d-none d-md-inline ms-2"
+                        style={{ fontSize: '0.75em', fontStyle: 'italic' }}>
+                        <RecurrenceComponent
+                            subscription={subscription}
+                            mode="text"
+                            thresholds={{ warning: 20, urgent: 10 }}
+                        />
+                    </span>
+                </div>
+            </div>
+
+
+            {/* Actions and Status Column */}
+            <div className="d-flex flex-column justify-content-between align-items-end"
+                style={{ minWidth: '90px' }}>
+                <div className="d-flex gap-2">
                     <div className="position-relative">
                         <FontAwesomeIcon
                             icon={faBell}
@@ -202,6 +176,7 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
                         <FontAwesomeIcon icon={faTrash} />
                     </Button>
                 </div>
+
                 <SubscriptionStateDisplay
                     state={subscription.state}
                     subscriptionId={subscription.id}

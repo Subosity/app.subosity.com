@@ -1,0 +1,40 @@
+.provider-description-container {
+    width: 100%;
+    max-width: 700px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+}
+
+.provider-description {
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .provider-description-container {
+        max-width: 320px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .provider-description-container {
+        max-width: 500px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .provider-description-container {
+        max-width: 900px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .provider-description-container {
+        max-width: 1100px;
+    }
+}

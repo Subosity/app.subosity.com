@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAlerts } from '../AlertsContext';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
 import RecurrenceComponent from './RecurrenceComponent';
+import '../styles/subscriptionCard.css';
 
 interface Props {
     subscription: Subscription;
@@ -70,7 +71,7 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                             />
                         </div>
                         <div className="ms-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
-                            <h5 className="mb-1 text-truncate" style={{ color: 'var(--bs-body-color)' }}>
+                            <h5 className="mb-1 text-truncate provider-name">
                                 {subscription.providerName}
                             </h5>
                             {subscription.nickname ? (
