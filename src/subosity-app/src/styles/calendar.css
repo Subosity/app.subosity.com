@@ -62,7 +62,13 @@
 
 /* Expand the all-day events section */
 .rbc-allday-cell {
-    height: calc(100vh - 280px) !important; /* Adjust the height as needed */
+    height: calc(100vh - 270px) !important; /* Adjust the height as needed */
+}
+
+@media (max-width: 768px) {
+    .rbc-allday-cell {
+        height: calc(100vh - 330px) !important; /* Adjust the height as needed */
+    }
 }
 
 .rbc-allday-events {
