@@ -14,11 +14,12 @@ interface PaymentProvider {
 }
 
 interface Props {
-    value: PaymentProvider | null;
+    value?: string | null;  // Changed from PaymentProvider to string
     onChange: (providerId: string) => void;
-    onAddNew: () => void;
+    onAddNew?: () => void;
     error?: string;
     touched?: boolean;
+    isInvalid?: boolean;
 }
 
 const CustomSingleValue = ({ children, ...props }: any) => (
@@ -140,7 +141,8 @@ const PaymentProviderDropdown: React.FC<Props> = ({
     onChange,
     onAddNew,
     error,
-    touched
+    touched,
+    isInvalid
 }) => {
     const [providers, setProviders] = useState<PaymentProvider[]>([]);
 
@@ -159,33 +161,30 @@ const PaymentProviderDropdown: React.FC<Props> = ({
     }, []);
 
     return (
-        <Select
-            value={value}
-            onChange={(option: any) => {
-                if (option?.isAddNew) {
-                    onAddNew();
-                    return;
-                }
-                onChange(option?.id || '');
-            }}
-            options={[
-                ...providers,
-                ADD_NEW_PROVIDER
-            ]}
-            components={{
-                Option: CustomOption,
-                SingleValue: CustomSingleValue
-            }}
-            styles={selectStyles}
-            isSearchable={true}
-            placeholder="Select payment method..."
-            filterOption={(option, inputValue) => {
-                const { name, description } = option.data;
-                const searchValue = inputValue.toLowerCase();
-                return name.toLowerCase().includes(searchValue) || 
-                       (description || '').toLowerCase().includes(searchValue);
-            }}
-        />
+        <>
+            <Select
+                value={providers.find(p => p.id === value) || null}
+                onChange={(selected: PaymentProvider | null) => onChange(selected?.id || '')}
+                options={[
+                    ...providers,
+                    ADD_NEW_PROVIDER
+                ]}
+                components={{
+                    Option: CustomOption,
+                    SingleValue: CustomSingleValue
+                }}
+                styles={selectStyles}
+                isSearchable={true}
+                placeholder="Select payment method..."
+                filterOption={(option, inputValue) => {
+                    const { name, description } = option.data;
+                    const searchValue = inputValue.toLowerCase();
+                    return name.toLowerCase().includes(searchValue) || 
+                           (description || '').toLowerCase().includes(searchValue);
+                }}
+            />
+            {/* ...existing error display JSX... */}
+        </>
     );
 };
 

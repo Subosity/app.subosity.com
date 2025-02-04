@@ -9,6 +9,7 @@ import RecurrenceModal from './RecurrenceModal';
 import AddSubscriptionProviderModal from './AddSubscriptionProviderModal';
 import SubscriptionProviderDropdown from './SubscriptionProviderDropdown';
 import PaymentProviderDropdown from './PaymentProviderDropdown';
+import FundingSourceDropdown from './Funding/FundingSourceDropdown';
 
 // Near the top with other interfaces
 type SubscriptionState = 'trial' | 'active' | 'canceled' | 'expired' | 'paused';
@@ -125,7 +126,7 @@ interface ValidationErrors {
     amount?: string;
     renewalFrequency?: string;
     state?: string;
-    paymentProviderId?: string;
+    fundingSourceId?: string;
     recurrenceRule?: string;
 }
 
@@ -215,6 +216,7 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Subscription>>(() => ({
         state: 'trial',  // Default state
+        startDate: new Date().toISOString().split('T')[0], // Initialize with today's date
         ...initialData   // Spread the initial data if provided
     }));
     const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
@@ -271,8 +273,8 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
         if (!data.state) {
             newErrors.state = 'Please select a subscription state';
         }
-        if (!data.paymentProviderId) {
-            newErrors.paymentProviderId = 'Please select a payment method';
+        if (!data.fundingSourceId) {  // Change from paymentProviderId
+            newErrors.fundingSourceId = 'Please select a funding source';
         }
 
         return newErrors;
@@ -406,8 +408,12 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
                 <Form.Control
                     type="date"
                     name="startDate"
-                    value={formData.startDate}
+                    value={formData.startDate || ''} // Ensure we always have a string value
                     onChange={(e) => {
+                        if (!e.target.value) {
+                            setFormData({ ...formData, startDate: '' });
+                            return;
+                        }
                         const localDate = new Date(e.target.value);
                         const utcDate = new Date(Date.UTC(localDate.getFullYear(), localDate.getMonth(), localDate.getDate()));
                         setFormData({ ...formData, startDate: utcDate.toISOString().split('T')[0] });
@@ -517,35 +523,15 @@ const SubscriptionForm = forwardRef<SubscriptionFormRef, Props>(({
 
             <Form.Group className="mb-3">
                 <Form.Label>
-                    Payment Method <span className="text-danger">*</span>
+                    Funding Source <span className="text-danger">*</span>
                 </Form.Label>
-                <PaymentProviderDropdown
-                    value={paymentProviders.find(p => p.id === formData.paymentProviderId)}
+                <FundingSourceDropdown
+                    value={formData.fundingSourceId}
                     onChange={(id) => {
-                        handleChange('paymentProviderId', id);
+                        handleChange('fundingSourceId', id);
                     }}
-                    onAddNew={() => setShowAddPaymentProvider(true)}
-                    error={errors.paymentProviderId}
+                    error={errors.fundingSourceId}
                     touched={validated}
-                />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>Payment Details</Form.Label>
-                <Form.Control
-                    type="text"
-                    value={formData.paymentDetails || ''}
-                    onChange={(e) => setFormData({ ...formData, paymentDetails: e.target.value })}
-                    placeholder="Optional: Enter payment details (e.g., last 4 digits of card)"
-                    style={{
-                        backgroundColor: 'var(--bs-body-bg)',
-                        color: 'var(--bs-body-color)',
-                        borderColor: 'var(--bs-border-color)',
-                        '::placeholder': {
-                            color: 'var(--bs-body-color)',
-                            opacity: 0.5
-                        }
-                    }}
                 />
             </Form.Group>
 

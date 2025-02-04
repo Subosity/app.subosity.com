@@ -8,10 +8,13 @@ export interface Subscription {
     startDate: string | null;
     autoRenewal: boolean;
     amount: number;
-    paymentProviderId: string;
-    paymentProviderName: string;
-    paymentProviderIcon: string;
-    paymentDetails: string;
+    fundingSourceId: string;  // New field
+    fundingSource?: {        // New nested object
+        id: string;
+        name: string;
+        paymentProviderName: string;
+        paymentProviderIcon: string;
+    };
     notes?: string;
     state: 'trial' | 'active' | 'canceled' | 'expired' | 'paused';
     nickname?: string;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Card, Button, Badge, ListGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -19,7 +19,11 @@ import {
     faEnvelope,
     faEnvelopeOpen,
     faCheckCircle,
-    faBan
+    faBan,
+    faCalendarDay,
+    faCalendarWeek,
+    faCalendarDays,
+    faCalendar
 } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
@@ -32,6 +36,7 @@ import NoAlertsHero from '../components/NoAlertsHero';
 import SubscriptionStateDisplay from '../components/SubscriptionStateDisplay';
 import SubscriptionTimeline from '../components/SubscriptionTimeline';
 import RecurrenceComponent from '../components/RecurrenceComponent';
+import { getOccurrencesInRange } from '../utils/recurrenceUtils';
 
 const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -55,6 +60,37 @@ const getSeverityColor = (severity: string) => {
         default:
             return 'var(--bs-info)';
     }
+};
+
+const calculateSubscriptionPaymentSummary = (subscription: Subscription) => {
+    if (!subscription || !subscription.recurrenceRule) return {
+        daily: 0,
+        weekly: 0,
+        monthly: 0,
+        yearly: 0
+    };
+
+    const now = new Date();
+    const yearStart = new Date(new Date().getFullYear(), 0, 1); // January 1st
+    const yearEnd = new Date(new Date().getFullYear(), 11, 31); // December 31st
+
+    // Get occurrences for the whole year
+    const occurrences = getOccurrencesInRange(
+        subscription.recurrenceRule,
+        yearStart,
+        yearEnd,
+        yearStart
+    );
+
+    // Calculate yearly total based on actual occurrences
+    const yearlyTotal = (subscription.amount || 0) * occurrences.length;
+
+    return {
+        daily: yearlyTotal / 365.25,
+        weekly: yearlyTotal / 52.18,
+        monthly: yearlyTotal / 12,
+        yearly: yearlyTotal
+    };
 };
 
 interface Props {
@@ -119,10 +155,14 @@ const SubscriptionDetail: React.FC = () => {
                         website,
                         unsubscribe_url
                     ),
-                    payment_provider:payment_provider_id(
+                    funding_source:funding_source_id(
                         id,
                         name,
-                        icon
+                        payment_provider:payment_provider_id(
+                            id,
+                            name,
+                            icon
+                        )
                     )
                 `)
                 .eq('id', id)
@@ -145,10 +185,13 @@ const SubscriptionDetail: React.FC = () => {
                 recurrenceRuleUiFriendly: data.recurrence_rule_ui_friendly,
                 autoRenewal: data.autorenew,
                 amount: data.amount,
-                paymentProviderId: data.payment_provider_id,
-                paymentProviderName: data.payment_provider.name,
-                paymentProviderIcon: data.payment_provider.icon,
-                paymentDetails: data.payment_details,
+                fundingSourceId: data.funding_source_id,
+                fundingSource: data.funding_source ? {
+                    id: data.funding_source.id,
+                    name: data.funding_source.name,
+                    paymentProviderName: data.funding_source.payment_provider.name,
+                    paymentProviderIcon: data.funding_source.payment_provider.icon
+                } : undefined,
                 notes: data.notes,
                 state: data.state
             });
@@ -259,7 +302,7 @@ const SubscriptionDetail: React.FC = () => {
                             </div>
                         </div>
 
-                        <Card className="mb-4 shadow p-3">
+                        <Card className="mb-4 shadow-sm p-3">
                             <dl className="row">
                                 <dt className="col-sm-3">Category</dt>
                                 <dd className="col-sm-9">{subscription.providerCategory || 'Unknown Category'}</dd>
@@ -287,18 +330,24 @@ const SubscriptionDetail: React.FC = () => {
                                     {subscription.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Not specified'}
                                 </dd>
 
-                                <dt className="col-sm-3">Payment Method</dt>
+                                <dt className="col-sm-3">Funding Source</dt>
                                 <dd className="col-sm-9">
-                                    <div className="d-flex align-items-center">
-                                        <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
-                                            <img
-                                                src={subscription.paymentProviderIcon}
-                                                alt={subscription.paymentProviderName}
-                                                style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                                            />
+                                    <Link
+                                        to={`/funding/${subscription.fundingSource?.id}`}
+                                        className="text-decoration-none"
+                                        style={{ color: 'var(--bs-body-color)' }}
+                                    >
+                                        <div className="d-flex align-items-center">
+                                            <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
+                                                <img
+                                                    src={subscription.fundingSource?.paymentProviderIcon}
+                                                    alt={subscription.fundingSource?.paymentProviderName}
+                                                    style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                            {subscription.fundingSource?.name}
                                         </div>
-                                        {subscription.paymentDetails}
-                                    </div>
+                                    </Link>
                                 </dd>
 
                                 {subscription.notes && (
@@ -321,15 +370,70 @@ const SubscriptionDetail: React.FC = () => {
                                     </Button>
                                 </dd>
                             </dl>
+
+                            <div className="row g-3">
+                                <div className="col-12 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).daily.toFixed(2)}</h4>
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarDay} className="me-2" />
+                                            Per Day
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-12 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).weekly.toFixed(2)}</h4>
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
+                                            Per Week
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-12 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).monthly.toFixed(2)}</h4>
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarDays} className="me-2" />
+                                            Per Month
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-12 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).yearly.toFixed(2)}</h4>
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendar} className="me-2" />
+                                            Per Year
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                            </div>
+
                         </Card>
-                        <div className="d-flex justify-content-end">
-                            <SubscriptionStateDisplay
-                                state={subscription.state}
-                                subscriptionId={subscription.id}
-                            />
-                        </div>
+
                         {subscription && (
-                            <div className="mt-4">
+                            <div className="mt-4 shadow-sm">
                                 <SubscriptionTimeline subscriptionId={subscription.id} />
                             </div>
                         )}

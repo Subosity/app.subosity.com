@@ -1,52 +1,47 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Offcanvas, Button } from 'react-bootstrap';
-import { Subscription } from '../types';
-import SubscriptionForm, { SubscriptionFormRef } from './SubscriptionForm';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
-import { faChevronLeft, faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import { FundingSource } from '../../types/FundingSource';
+import FundingForm, { FundingFormRef } from './FundingForm';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
     show: boolean;
     onHide: () => void;
-    subscription: Subscription | null;
-    onSubmit: (data: Partial<Subscription>) => void;
+    fundingSource: FundingSource | null;
+    onSubmit: (data: Partial<FundingSource>) => void;
 }
 
-const EditSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit, subscription }) => {
+const EditFundingModal: React.FC<Props> = ({ show, onHide, onSubmit, fundingSource }) => {
     const { addToast } = useToast();
-    const formRef = useRef<SubscriptionFormRef>(null);
+    const formRef = useRef<FundingFormRef>(null);
     const [isFormValid, setIsFormValid] = useState(false);
 
-    const handleSubmit = async (data: Partial<Subscription>) => {
+    const handleSubmit = async (data: Partial<FundingSource>) => {
         try {
-            if (!subscription?.id) throw new Error('No subscription ID');
+            if (!fundingSource?.id) throw new Error('No funding source ID');
 
             const { error } = await supabase
-                .from('subscription')
+                .from('funding_source')
                 .update({
-                    subscription_provider_id: data.providerId,
-                    nickname: data.nickname,
-                    start_date: data.startDate,
-                    autorenew: data.autoRenewal,
-                    amount: data.amount,
-                    funding_source_id: data.fundingSourceId,  // Changed from payment_provider_id
+                    name: data.name,
+                    description: data.description,
                     notes: data.notes,
-                    state: data.state,
-                    recurrence_rule: data.recurrenceRule,
-                    recurrence_rule_ui_friendly: data.recurrenceRuleUiFriendly
+                    payment_provider_id: data.paymentProvider.id,
+                    funding_type: data.funding_type
                 })
-                .eq('id', subscription.id);
+                .eq('id', fundingSource.id);
 
             if (error) throw error;
 
-            addToast('Subscription updated successfully', 'success');
+            addToast('Funding source updated successfully', 'success');
             onSubmit(data);
             onHide();
         } catch (error) {
-            console.error('Error updating subscription:', error);
-            addToast('Failed to update subscription', 'error');
+            console.error('Error updating funding source:', error);
+            addToast('Failed to update funding source', 'error');
         }
     };
 
@@ -56,23 +51,23 @@ const EditSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit, subscr
                 <div>
                     <Offcanvas.Title>
                         <FontAwesomeIcon icon={faEdit} className="me-2" />
-                        Edit Subscription
+                        Edit Funding Source
                     </Offcanvas.Title>
                     <div style={{ fontSize: '0.85em', opacity: 0.6 }}>
-                        Edit an existing subscription.
+                        Edit an existing funding source.
                     </div>
                 </div>
             </Offcanvas.Header>
             <Offcanvas.Body>
-                <SubscriptionForm
+                <FundingForm
                     ref={formRef}
-                    initialData={subscription}
+                    initialData={fundingSource}
                     onSubmit={handleSubmit}
                     onCancel={onHide}
                     onValidationChange={setIsFormValid}
                 />
             </Offcanvas.Body>
-            <div className="p-3 border-top" style={{ backgroundColor: 'var(--bs-navbar-bg)' }}>
+            <div className="p-3 border-top" style={{ backgroundColor: 'var(--bs-navbar-bg)', color: 'var(--bs-body-color)' }}>
                 <div className="d-flex justify-content-end">
                     <Button variant="secondary" className="me-2" onClick={onHide}>
                         <FontAwesomeIcon icon={faChevronLeft} className="me-2" />
@@ -92,4 +87,4 @@ const EditSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit, subscr
     );
 };
 
-export default EditSubscriptionModal;
+export default EditFundingModal;

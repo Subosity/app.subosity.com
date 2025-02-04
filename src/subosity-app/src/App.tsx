@@ -23,6 +23,8 @@ import Home from './pages/Home';
 import Pricing from './pages/Pricing';
 import ProtectedRoute from './components/ProtectedRoute';
 import CalendarPage from './pages/CalendarPage';
+import FundingPage from './pages/FundingPage';
+import FundingDetailPage from './pages/FundingDetailPage';
 
 const AppContent: React.FC = () => {
 
@@ -61,6 +63,16 @@ const AppContent: React.FC = () => {
                     <Route path="/calendar" element={
                         <ProtectedRoute>
                             <CalendarPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/funding" element={
+                        <ProtectedRoute>
+                            <FundingPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/funding/:id" element={
+                        <ProtectedRoute>
+                            <FundingDetailPage />
                         </ProtectedRoute>
                     } />
                     <Route path="/profile" element={

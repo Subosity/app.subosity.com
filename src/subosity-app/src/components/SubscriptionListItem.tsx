@@ -77,11 +77,11 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
                         height: '32px',
                         backgroundColor: 'var(--bs-white)'
                     }}
-                    title={`${subscription.paymentProviderName}\n${subscription.paymentDetails}`}
+                    title={`${subscription.fundingSource?.paymentProviderName}\n${subscription.fundingSource?.name}`}
                 >
                     <img
-                        src={subscription.paymentProviderIcon}
-                        alt={subscription.paymentProviderName}
+                        src={subscription.fundingSource?.paymentProviderIcon}
+                        alt={subscription.fundingSource?.paymentProviderName}
                         style={{
                             width: '24px',
                             height: '24px',

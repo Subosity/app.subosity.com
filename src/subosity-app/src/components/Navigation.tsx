@@ -17,7 +17,8 @@ import {
     faUserPlus,
     faSignIn,
     faInfoCircle,
-    faCalendar
+    faCalendar,
+    faMoneyBill
 } from '@fortawesome/free-solid-svg-icons'
 import { useTheme } from '../ThemeContext'
 import { useAuth } from '../AuthContext'
@@ -89,6 +90,10 @@ const Navigation: React.FC = () => {
                             <Nav.Link as={Link} to="/calendar" onClick={closeNavbar}>
                                 <FontAwesomeIcon icon={faCalendar} className="me-2" />
                                 Calendar
+                            </Nav.Link>
+                            <Nav.Link as={Link} to="/funding" onClick={closeNavbar}>
+                                <FontAwesomeIcon icon={faMoneyBill} className="me-2" />
+                                Funding
                             </Nav.Link>
 
                         </Nav>

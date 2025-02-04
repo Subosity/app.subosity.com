@@ -1,4 +1,4 @@
-interface PaymentProvider {
+export interface PaymentProvider {
     id: string;
     name: string;
     icon: string;

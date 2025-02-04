@@ -56,10 +56,14 @@ const CalendarPage: React.FC = () => {
                     category,
                     icon
                 ),
-                payment_provider:payment_provider_id(
+                funding_source:funding_source_id(
                     id,
                     name,
-                    icon
+                    payment_provider:payment_provider_id(
+                        id,
+                        name,
+                        icon
+                    )
                 ),
                 subscription_history!inner (
                     state,
@@ -95,7 +99,7 @@ const CalendarPage: React.FC = () => {
                 resource: {
                     amount: sub.amount,
                     providerLogo: sub.subscription_provider.icon,
-                    paymentIcon: sub.payment_provider.icon,
+                    paymentIcon: sub.funding_source?.payment_provider?.icon,
                     category: sub.subscription_provider.category
                 },
                 subscription: {
@@ -111,10 +115,13 @@ const CalendarPage: React.FC = () => {
                     recurrenceRuleUiFriendly: sub.recurrence_rule_ui_friendly,
                     autoRenewal: sub.autorenew,
                     amount: sub.amount,
-                    paymentProviderId: sub.payment_provider_id,
-                    paymentProviderName: sub.payment_provider.name,
-                    paymentProviderIcon: sub.payment_provider.icon,
-                    paymentDetails: sub.payment_details,
+                    fundingSourceId: sub.funding_source_id,
+                    fundingSource: sub.funding_source ? {
+                        id: sub.funding_source.id,
+                        name: sub.funding_source.name,
+                        paymentProviderName: sub.funding_source.payment_provider.name,
+                        paymentProviderIcon: sub.funding_source.payment_provider.icon
+                    } : undefined,
                     notes: sub.notes,
                     state: sub.state
                 }

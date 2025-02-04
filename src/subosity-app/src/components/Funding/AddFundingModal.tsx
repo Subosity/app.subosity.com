@@ -1,61 +1,54 @@
 import React, { useRef, useState } from 'react';
 import { Offcanvas, Button } from 'react-bootstrap';
-import { Subscription } from '../types';
-import SubscriptionForm, { SubscriptionFormRef } from './SubscriptionForm';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
+import { FundingSource } from '../../types/FundingSource';
+import FundingForm, { FundingFormRef } from './FundingForm';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faSave, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faSave, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
     show: boolean;
     onHide: () => void;
-    onSubmit: (data: Partial<Subscription>) => void;
+    onSubmit: (data: Partial<FundingSource>) => void;
 }
 
-const AddSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit }) => {
+const AddFundingModal: React.FC<Props> = ({ show, onHide, onSubmit }) => {
     const { addToast } = useToast();
     const [isFormValid, setIsFormValid] = useState(false);
-    const formRef = useRef<SubscriptionFormRef>(null);
+    const formRef = useRef<FundingFormRef>(null);
 
-    // Add logging to track flow
-    const handleSubmit = async (data: Partial<Subscription>) => {
-        console.log('AddSubscriptionModal handleSubmit called with:', data);
+       const handleSubmit = async (data: Partial<FundingSource>) => {
+        console.log('AddFundingModal handleSubmit called with:', data);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No authenticated user');
-
-            // Map form data to database fields
-            const subscriptionData = {
+    
+            const fundingData = {
                 owner: user.id,
-                subscription_provider_id: data.providerId,
-                nickname: data.nickname,
-                start_date: data.startDate,
-                autorenew: data.autoRenewal,
-                amount: data.amount,
-                funding_source_id: data.fundingSourceId,  // Changed from payment_provider_id
+                name: data.name,
+                description: data.description,
                 notes: data.notes,
-                state: data.state || 'active',
-                recurrence_rule: data.recurrenceRule,
-                recurrence_rule_ui_friendly: data.recurrenceRuleUiFriendly
+                payment_provider_id: data.paymentProvider?.id, // Fix: access id through paymentProvider object
+                funding_type: data.funding_type
             };
-
-            console.log('Inserting subscription data:', subscriptionData);
+    
+            console.log('Inserting funding data:', fundingData);
             const { error } = await supabase
-                .from('subscription')
-                .insert([subscriptionData]);
-
+                .from('funding_source')
+                .insert([fundingData]);
+    
             if (error) {
                 console.error('Supabase insert error:', error);
                 throw error;
             }
-
-            addToast('Subscription added successfully', 'success');
+    
+            addToast('Funding source added successfully', 'success');
             onSubmit(data);
             onHide();
         } catch (error) {
             console.error('Error in handleSubmit:', error);
-            addToast('Failed to add subscription', 'error');
+            addToast('Failed to add funding source', 'error');
         }
     };
 
@@ -64,16 +57,16 @@ const AddSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit }) => {
             <Offcanvas.Header closeButton style={{ backgroundColor: 'var(--bs-navbar-bg)', color: 'var(--bs-body-color)' }}>
                 <div>
                     <Offcanvas.Title>
-                        <FontAwesomeIcon icon={faSquarePlus} className="me-2" />
-                        Add Subscription
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Add Funding Source
                     </Offcanvas.Title>
                     <div style={{ fontSize: '0.85em', opacity: 0.6 }}>
-                        Add a new subscription to start tracking.
+                        Add a new funding source to start tracking.
                     </div>
                 </div>
             </Offcanvas.Header>
             <Offcanvas.Body>
-                <SubscriptionForm
+                <FundingForm
                     ref={formRef}
                     onSubmit={handleSubmit}
                     onCancel={onHide}
@@ -100,4 +93,4 @@ const AddSubscriptionModal: React.FC<Props> = ({ show, onHide, onSubmit }) => {
     );
 };
 
-export default AddSubscriptionModal;
+export default AddFundingModal;

@@ -122,12 +122,12 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                         <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2"
                             style={{ backgroundColor: 'var(--bs-white)' }}>
                             <img
-                                src={subscription.paymentProviderIcon} // Changed from subscription.paymentIcon
+                                src={subscription.fundingSource?.paymentProviderIcon} 
                                 style={{ height: 'auto', width: '22px' }}
-                                alt={`${subscription.paymentProviderName} icon`} // Added provider name
+                                alt={`${subscription.fundingSource?.paymentProviderName} icon`}
                             />
                         </div>
-                        {subscription.paymentDetails}
+                        {subscription.fundingSource?.name}
                     </div>
 
                     {/* Active/Inactive badge on the right */}
