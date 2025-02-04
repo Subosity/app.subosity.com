@@ -29,25 +29,34 @@ import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
 
 
 const calculatePaymentSummary = (subscriptions: Subscription[]) => {
-    const activeSubscriptions = subscriptions.filter(sub => sub.state === 'active');
+
+    if (!subscriptions || subscriptions.length === 0) {
+        return {
+            daily: 0,
+            weekly: 0,
+            monthly: 0,
+            yearly: 0
+        };
+    }
+
     const yearStart = new Date(new Date().getFullYear(), 0, 1); // January 1st
     const yearEnd = new Date(new Date().getFullYear(), 11, 31); // December 31st
 
     let yearlyTotal = 0;
 
-    activeSubscriptions.forEach(sub => {
-        if (!sub.recurrence_rule) return;
-
-        // Get all occurrences for the full year
+    subscriptions.forEach(sub => {
         const occurrences = getOccurrencesInRange(
-            sub.recurrence_rule,
+            sub.recurrenceRule,
             yearStart,
-            yearEnd,
-            yearStart // Use January 1st as the start date
+            yearEnd
         );
+        //console.log('Occurrences found:', occurrences);
 
         const amount = sub.amount || 0;
-        yearlyTotal += amount * occurrences.length;
+        const subTotal = amount * occurrences.length;
+        yearlyTotal += subTotal;
+
+        //console.log('Subtotal:', subTotal, 'Running total:', yearlyTotal);
     });
 
     // Calculate monthly, weekly, and daily averages based on the actual yearly total
@@ -79,6 +88,8 @@ const FundingDetailPage: React.FC = () => {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [summary, setSummary] = useState({ daily: 0, weekly: 0, monthly: 0, yearly: 0 });
     const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+    const [filteredSummary, setFilteredSummary] = useState(summary);
+    const [filteredSubscriptions, setFilteredSubscriptions] = useState<Subscription[] | null>(null);
 
     useEffect(() => {
         if (id) fetchFundingSource();
@@ -123,7 +134,7 @@ const FundingDetailPage: React.FC = () => {
         }
 
         try {
-            const { data, error } = await supabase
+            const { data: subscriptionData, error: subscriptionError } = await supabase
                 .from('subscription')
                 .select(`
                     *,
@@ -137,11 +148,11 @@ const FundingDetailPage: React.FC = () => {
                         )
                     )
                 `)
-                .eq('funding_source_id', id);
+                .eq('funding_source_id', id); // Add this filter
 
-            if (error) throw error;
+            if (subscriptionError) throw subscriptionError;
 
-            setSubscriptions((data || []).map(sub => ({
+            const mappedSubscriptions = (subscriptionData || []).map(sub => ({
                 id: sub.id,
                 providerId: sub.subscription_provider_id,
                 providerName: sub.subscription_provider.name,
@@ -150,10 +161,10 @@ const FundingDetailPage: React.FC = () => {
                 providerIcon: sub.subscription_provider.icon,
                 nickname: sub.nickname,
                 startDate: sub.start_date,
-                recurrenceRule: sub.recurrence_rule,                    // Add this
-                recurrenceRuleUiFriendly: sub.recurrence_rule_ui_friendly, // Add this
+                recurrenceRule: sub.recurrence_rule,            // Critical for calculations
+                recurrenceRuleUiFriendly: sub.recurrence_rule_ui_friendly,
                 autoRenewal: sub.autorenew,
-                amount: sub.amount,
+                amount: sub.amount,                             // Critical for calculations
                 fundingSourceId: sub.funding_source_id,
                 fundingSource: sub.funding_source ? {
                     id: sub.funding_source.id,
@@ -162,13 +173,31 @@ const FundingDetailPage: React.FC = () => {
                     paymentProviderIcon: sub.funding_source.payment_provider.icon
                 } : undefined,
                 notes: sub.notes,
-                state: sub.state
-            } satisfies Subscription)));
-            setSummary(calculatePaymentSummary(data));
-            setSubscriptionCount(data.length || 0);
+                state: sub.state                               // Critical for calculations
+            }));
+
+            setSubscriptions(mappedSubscriptions);
+
+            // Calculate initial summary
+            const initialSummary = calculatePaymentSummary(mappedSubscriptions);
+            setSummary(initialSummary);
+            setFilteredSummary(initialSummary); // Set filtered summary to initial summary
+
+            setSubscriptionCount(mappedSubscriptions.length);
+
         } catch (error) {
-            console.error('Error fetching subscriptions:', error);
-            addToast('Error loading subscriptions', 'error');
+            console.error('Error:', error);
+            addToast('Error loading subscription details', 'error');
+        }
+    };
+
+    const handleFilteredSubscriptions = (filtered: Subscription[] | null) => {
+        setFilteredSubscriptions(filtered);
+        if (filtered) {
+            const newSummary = calculatePaymentSummary(filtered);
+            setFilteredSummary(newSummary);
+        } else {
+            setFilteredSummary(summary); // Reset to total when no filters
         }
     };
 
@@ -233,12 +262,12 @@ const FundingDetailPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="d-flex align-items-center gap-2">
-                                <Button variant="outline-primary" size="sm" 
+                                <Button variant="outline-primary" size="sm"
                                     className="d-inline-flex align-items-center" onClick={() => setShowEditFunding(true)}>
                                     <FontAwesomeIcon icon={faEdit} className="me-2" />
                                     Edit
                                 </Button>
-                                <Button variant="outline-danger" size="sm" 
+                                <Button variant="outline-danger" size="sm"
                                     className="d-inline-flex align-items-center"
                                     onClick={() => subscriptionCount > 0 ? setShowUnable(true) : setShowDeleteFunding(true)}>
                                     <FontAwesomeIcon icon={faTrash} className="me-2" />
@@ -253,9 +282,17 @@ const FundingDetailPage: React.FC = () => {
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
                                 }}>
-                                    
                                     <Card.Body className="text-center">
-                                        <h4 className="mb-0">${summary.daily.toFixed(2)}</h4>
+                                        {filteredSubscriptions ? (
+                                            <>
+                                                <h4 className="mb-0">${filteredSummary.daily.toFixed(2)}</h4>
+                                                <h6 className="mb-0 text-muted">
+                                                    of ${summary.daily.toFixed(2)} total
+                                                </h6>
+                                            </>
+                                        ) : (
+                                            <h4 className="mb-0">${summary.daily.toFixed(2)}</h4>
+                                        )}
                                     </Card.Body>
                                     <Card.Footer className="text-center">
                                         <FontAwesomeIcon icon={faCalendarDay} className="me-2" />
@@ -268,9 +305,18 @@ const FundingDetailPage: React.FC = () => {
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
                                 }}>
-                                    
+
                                     <Card.Body className="text-center">
-                                        <h4 className="mb-0">${summary.weekly.toFixed(2)}</h4>
+                                        {filteredSubscriptions ? (
+                                            <>
+                                                <h4 className="mb-0">${filteredSummary.weekly.toFixed(2)}</h4>
+                                                <h6 className="mb-0 text-muted">
+                                                    of ${summary.weekly.toFixed(2)} total
+                                                </h6>
+                                            </>
+                                        ) : (
+                                            <h4 className="mb-0">${summary.weekly.toFixed(2)}</h4>
+                                        )}
                                     </Card.Body>
                                     <Card.Footer className="text-center">
                                         <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
@@ -285,7 +331,16 @@ const FundingDetailPage: React.FC = () => {
                                 }}>
 
                                     <Card.Body className="text-center">
-                                        <h4 className="mb-0">${summary.monthly.toFixed(2)}</h4>
+                                        {filteredSubscriptions ? (
+                                            <>
+                                                <h4 className="mb-0">${filteredSummary.monthly.toFixed(2)}</h4>
+                                                <h6 className="mb-0 text-muted">
+                                                    of ${summary.monthly.toFixed(2)} total
+                                                </h6>
+                                            </>
+                                        ) : (
+                                            <h4 className="mb-0">${summary.monthly.toFixed(2)}</h4>
+                                        )}
                                     </Card.Body>
                                     <Card.Footer className="text-center">
                                         <FontAwesomeIcon icon={faCalendarDays} className="me-2" />
@@ -298,9 +353,18 @@ const FundingDetailPage: React.FC = () => {
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
                                 }}>
-                                    
+
                                     <Card.Body className="text-center">
-                                        <h4 className="mb-0">${summary.yearly.toFixed(2)}</h4>
+                                        {filteredSubscriptions ? (
+                                            <>
+                                                <h4 className="mb-0">${filteredSummary.yearly.toFixed(2)}</h4>
+                                                <h6 className="mb-0 text-muted">
+                                                    of ${summary.yearly.toFixed(2)} total
+                                                </h6>
+                                            </>
+                                        ) : (
+                                            <h4 className="mb-0">${summary.yearly.toFixed(2)}</h4>
+                                        )}
                                     </Card.Body>
                                     <Card.Footer className="text-center">
                                         <FontAwesomeIcon icon={faCalendar} className="me-2" />
@@ -327,6 +391,7 @@ const FundingDetailPage: React.FC = () => {
                             setSelectedSubscription(sub);
                             setShowDelete(true);
                         }}
+                        onFilterChange={handleFilteredSubscriptions}
                         emptyStateComponent={
                             <Alert variant="info">
                                 No subscriptions are currently using this funding source.

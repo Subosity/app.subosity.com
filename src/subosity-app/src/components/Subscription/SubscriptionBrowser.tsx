@@ -1,5 +1,5 @@
 // src/components/SubscriptionBrowser.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Card, Form, InputGroup, Alert, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThLarge, faList, faSearch, faFilter, faCheck, faRotateLeft, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -14,13 +14,16 @@ interface Props {
     onEdit: (subscription: Subscription) => void;
     onDelete: (subscription: Subscription) => void;
     emptyStateComponent?: React.ReactNode;
+    // Add new optional prop
+    onFilterChange?: (filteredSubscriptions: Subscription[]) => void;
 }
 
-const SubscriptionBrowser: React.FC<Props> = ({ 
-    subscriptions, 
-    onEdit, 
+const SubscriptionBrowser: React.FC<Props> = ({
+    subscriptions,  // Source of truth - never mutated 
+    onEdit,
     onDelete,
-    emptyStateComponent 
+    emptyStateComponent,
+    onFilterChange
 }) => {
     const [viewMode, setViewMode] = useState(() =>
         localStorage.getItem('subscriptionViewMode') || 'card'
@@ -59,7 +62,7 @@ const SubscriptionBrowser: React.FC<Props> = ({
         return subs.filter(sub =>
             !excludedStates.includes(sub.state) &&
             !excludedCategories.includes(sub.providerCategory) &&
-            (searchText === '' || 
+            (searchText === '' ||
                 sub.providerName.toLowerCase().includes(searchText.toLowerCase()) ||
                 sub.providerDescription.toLowerCase().includes(searchText.toLowerCase()))
         );
@@ -80,7 +83,28 @@ const SubscriptionBrowser: React.FC<Props> = ({
         });
     };
 
-    const filteredAndSortedSubscriptions = sortSubscriptions(filterSubscriptions(subscriptions));
+    // Calculate filtered results once
+    const filteredAndSortedSubscriptions = useMemo(() => {
+        const filtered = filterSubscriptions(subscriptions);
+        const sorted = sortSubscriptions(filtered);
+        return sorted;
+    }, [subscriptions, searchText, excludedStates, excludedCategories, sortOrder]);
+
+    // Emit changes ONLY when filters/sort change, not when results change
+    useEffect(() => {
+        if (onFilterChange) {
+            // If no filters active, pass null
+            const hasActiveFilters = searchText !== '' ||
+                excludedStates.length > 0 ||
+                excludedCategories.length > 0;
+
+            if (!hasActiveFilters) {
+                onFilterChange(null);
+            } else {
+                onFilterChange(filteredAndSortedSubscriptions);
+            }
+        }
+    }, [searchText, excludedStates, excludedCategories, sortOrder]); // Remove filtered results dependency
 
     // Move the NoMatchesContent here as it's specific to browsing
     const NoMatchesContent = () => (
@@ -92,8 +116,8 @@ const SubscriptionBrowser: React.FC<Props> = ({
             <p className="text-body-secondary mb-4">
                 No subscriptions match your search criteria. Try adjusting your search terms.
             </p>
-            <Button 
-                variant="secondary" 
+            <Button
+                variant="secondary"
                 onClick={() => {
                     setSearchText('');
                     setExcludedStates([]);
