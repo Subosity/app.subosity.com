@@ -11,7 +11,8 @@ import {
     faCalendarDay,
     faCalendarWeek,
     faCalendarDays,
-    faCalendar
+    faCalendar,
+    faHandHoldingDollar
 } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
@@ -138,7 +139,7 @@ const FundingDetailPage: React.FC = () => {
 
             if (error) throw error;
 
-            setSubscriptions(data.map(sub => ({
+            setSubscriptions((data || []).map(sub => ({
                 id: sub.id,
                 providerId: sub.subscription_provider_id,
                 providerName: sub.subscription_provider.name,
@@ -147,8 +148,8 @@ const FundingDetailPage: React.FC = () => {
                 providerIcon: sub.subscription_provider.icon,
                 nickname: sub.nickname,
                 startDate: sub.start_date,
-                recurrence_rule: sub.recurrence_rule,
-                recurrence_rule_ui_friendly: sub.recurrence_rule_ui_friendly,
+                recurrenceRule: sub.recurrence_rule,                    // Add this
+                recurrenceRuleUiFriendly: sub.recurrence_rule_ui_friendly, // Add this
                 autoRenewal: sub.autorenew,
                 amount: sub.amount,
                 fundingSourceId: sub.funding_source_id,
@@ -218,7 +219,7 @@ const FundingDetailPage: React.FC = () => {
                                         {fundingSource.description}
                                     </div>
                                     <Badge bg="info">
-                                        <FontAwesomeIcon icon={faCreditCard} className="me-2" />
+                                        <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
                                         {subscriptionCount} Subscription{subscriptionCount !== 1 ? 's' : ''}
                                     </Badge>
                                     {fundingSource.notes && (

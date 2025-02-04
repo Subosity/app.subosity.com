@@ -115,10 +115,15 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
                 </div>
 
                 <div className="d-flex align-items-center gap-2" style={{ fontSize: '0.85em' }}>
-                    <FontAwesomeIcon
-                        icon={subscription.autoRenewal ? faRotate : faHand}
-                        className={subscription.autoRenewal ? "text-success" : "text-secondary"}
-                    />
+                    <Badge bg={subscription.autoRenewal ? 'success' : 'secondary'}>
+                        <FontAwesomeIcon
+                            icon={subscription.autoRenewal ? faRotate : faHand}
+                            className="d-inline me-md-2"
+                        />
+                        <span className="d-none d-md-inline">
+                            {subscription.autoRenewal ? 'Auto-Renewal' : 'Manual Renewal'}
+                        </span>
+                    </Badge>
                     <span>${subscription.amount.toFixed(2)}</span>
                 </div>
 
