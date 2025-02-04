@@ -138,8 +138,8 @@ const FundingPage = () => {
                 </div>
                 <Button variant="primary" onClick={() => setShowAdd(true)} className="d-flex align-items-center nowrap">
                     <FontAwesomeIcon icon={faPlus} className="me-1" />
-                    <span className="d-none d-sm-inline">Add Funding Source</span>
-                    <span className="d-inline d-sm-none">Add</span>
+                    <span className="d-none d-md-inline">Add Funding Source</span>
+                    <span className="d-none d-sm-inline d-md-none">Add</span>
                 </Button>
             </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Alert } from 'react-bootstrap';
+import { Button, Alert, Card, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faHandHoldingDollar, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faHandHoldingDollar, faSquarePlus, faCalendarDay, faCalendarWeek, faCalendarDays, faCalendar, faThLarge, faList, faMoneyBill, faDollar } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
 import { Subscription } from '../types';
@@ -9,6 +9,7 @@ import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
 import EditSubscriptionModal from '../components/EditSubscriptionModal';
 import AddSubscriptionModal from '../components/AddSubscriptionModal';
 import SubscriptionBrowser from '../components/Subscription/SubscriptionBrowser';
+import { calculatePaymentSummary } from '../utils/subscriptionUtils';
 
 const MySubscriptions = () => {
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -18,6 +19,10 @@ const MySubscriptions = () => {
     const [showDelete, setShowDelete] = useState(false);
     const [showAdd, setShowAdd] = useState(false);
     const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
+    const [summary, setSummary] = useState({ daily: 0, weekly: 0, monthly: 0, yearly: 0 });
+    const [filteredSummary, setFilteredSummary] = useState(summary);
+    const [filteredSubscriptions, setFilteredSubscriptions] = useState<Subscription[] | null>(null);
+    const [showCosts, setShowCosts] = useState(false);
 
     useEffect(() => {
         fetchSubscriptions();
@@ -50,7 +55,7 @@ const MySubscriptions = () => {
 
             if (error) throw error;
 
-            setSubscriptions(data?.map(sub => ({
+            const mappedSubscriptions = (data?.map(sub => ({
                 id: sub.id,
                 providerId: sub.subscription_provider_id,
                 providerName: sub.subscription_provider.name,
@@ -73,11 +78,29 @@ const MySubscriptions = () => {
                 notes: sub.notes,
                 state: sub.state
             })) || []);
+
+            setSubscriptions(mappedSubscriptions);
+
+            // Calculate initial summary
+            const initialSummary = calculatePaymentSummary(mappedSubscriptions);
+            setSummary(initialSummary);
+            setFilteredSummary(initialSummary);
         } catch (error) {
             addToast('Error loading subscriptions', 'error');
             console.error('Error:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Add handler for filtered subscriptions
+    const handleFilteredSubscriptions = (filtered: Subscription[] | null) => {
+        setFilteredSubscriptions(filtered);
+        if (filtered) {
+            const newSummary = calculatePaymentSummary(filtered);
+            setFilteredSummary(newSummary);
+        } else {
+            setFilteredSummary(summary);
         }
     };
 
@@ -110,12 +133,145 @@ const MySubscriptions = () => {
                         Manage and track all your subscription services
                     </p>
                 </div>
-                <Button variant="primary" onClick={() => setShowAdd(true)} className="d-flex align-items-center nowrap">
-                    <FontAwesomeIcon icon={faPlus} className="me-1" />
-                    <span className="d-none d-sm-inline">Add Subscription</span>
-                    <span className="d-inline d-sm-none">Add</span>
-                </Button>
+                <div className="d-flex gap-2">
+                    <Button variant="primary" onClick={() => setShowAdd(true)} className="d-flex align-items-center nowrap">
+                        <FontAwesomeIcon icon={faPlus} className="me-1" />
+                        <span className="d-none d-md-inline">Add Subscription</span>
+                        <span className="d-none d-sm-inline d-md-none">Add</span>
+                    </Button>
+                    <Button
+                        variant={showCosts ? 'primary' : 'outline-primary'}
+                        onClick={() => setShowCosts(!showCosts)}
+                        className="d-flex align-items-center"
+                    >
+                        <FontAwesomeIcon icon={faMoneyBill} />
+                    </Button>
+                </div>
             </div>
+
+            <Collapse in={showCosts}>
+                <div>
+
+                    <Card className="mb-4 shadow" style={{
+                        backgroundColor: 'var(--bs-body-bg)',
+                        borderColor: 'var(--bs-border-color)'
+                    }}>
+                        <Card.Body>
+                            <h5 className="mb-0">
+                                <FontAwesomeIcon icon={faMoneyBill} className="me-2"></FontAwesomeIcon>Funding Summary
+                            </h5>
+                            <div className="mb-1" style={{ 'fontSize': '.85rem' }}>This area shows the cost of the selected subscriptions.</div>
+                            <div className="row g-3">
+                                <div className="col-6 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            {filteredSubscriptions ? (
+                                                <>
+                                                    <h4 className="mb-0">${filteredSummary.daily.toFixed(2)}</h4>
+                                                    <h6 className="mb-0 text-muted">
+                                                        of ${summary.daily.toFixed(2)} total
+                                                        <small style={{ "fontSize": "0.7rem" }}>
+                                                            {summary.daily > 0 && ` (${Math.round((filteredSummary.daily / summary.daily) * 100)}%)`}
+                                                        </small>
+                                                    </h6>
+                                                </>
+                                            ) : (
+                                                <h4 className="mb-0">${summary.daily.toFixed(2)}</h4>
+                                            )}
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarDay} className="me-2" />
+                                            Per Day
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-6 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            {filteredSubscriptions ? (
+                                                <>
+                                                    <h4 className="mb-0">${filteredSummary.weekly.toFixed(2)}</h4>
+                                                    <h6 className="mb-0 text-muted">
+                                                        of ${summary.weekly.toFixed(2)} total
+                                                        <small style={{ "fontSize": "0.7rem" }}>
+                                                            {summary.weekly > 0 && ` (${Math.round((filteredSummary.weekly / summary.weekly) * 100)}%)`}
+                                                        </small>
+                                                    </h6>
+                                                </>
+                                            ) : (
+                                                <h4 className="mb-0">${summary.weekly.toFixed(2)}</h4>
+                                            )}
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
+                                            Per Week
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-6 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            {filteredSubscriptions ? (
+                                                <>
+                                                    <h4 className="mb-0">${filteredSummary.monthly.toFixed(2)}</h4>
+                                                    <h6 className="mb-0 text-muted">
+                                                        of ${summary.monthly.toFixed(2)} total
+                                                        <small style={{ "fontSize": "0.7rem" }}>
+                                                            {summary.monthly > 0 && ` (${Math.round((filteredSummary.monthly / summary.monthly) * 100)}%)`}
+                                                        </small>
+                                                    </h6>
+                                                </>
+                                            ) : (
+                                                <h4 className="mb-0">${summary.monthly.toFixed(2)}</h4>
+                                            )}
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendarDays} className="me-2" />
+                                            Per Month
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                                <div className="col-6 col-md-3">
+                                    <Card className="h-100 shadow-sm" style={{
+                                        backgroundColor: 'var(--bs-body-bg)',
+                                        borderColor: 'var(--bs-border-color)'
+                                    }}>
+                                        <Card.Body className="text-center">
+                                            {filteredSubscriptions ? (
+                                                <>
+                                                    <h4 className="mb-0">${filteredSummary.yearly.toFixed(2)}</h4>
+                                                    <h6 className="mb-0 text-muted">
+                                                        of ${summary.yearly.toFixed(2)} total
+                                                        <small style={{ "fontSize": "0.7rem" }}>
+                                                            {summary.yearly > 0 && ` (${Math.round((filteredSummary.yearly / summary.yearly) * 100)}%)`}
+                                                        </small>
+                                                    </h6>
+                                                </>
+                                            ) : (
+                                                <h4 className="mb-0">${summary.yearly.toFixed(2)}</h4>
+                                            )}
+                                        </Card.Body>
+                                        <Card.Footer className="text-center">
+                                            <FontAwesomeIcon icon={faCalendar} className="me-2" />
+                                            Per Year
+                                        </Card.Footer>
+                                    </Card>
+                                </div>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </div>
+            </Collapse>
+
 
             {loading ? (
                 <div className="text-center mt-5">
@@ -134,6 +290,7 @@ const MySubscriptions = () => {
                         setSelectedSubscription(sub);
                         setShowDelete(true);
                     }}
+                    onFilterChange={handleFilteredSubscriptions}
                     emptyStateComponent={<NoSubscriptionsContent />}
                 />
             )}

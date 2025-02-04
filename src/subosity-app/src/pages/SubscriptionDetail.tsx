@@ -372,7 +372,7 @@ const SubscriptionDetail: React.FC = () => {
                             </dl>
 
                             <div className="row g-3">
-                                <div className="col-12 col-md-3">
+                                <div className="col-6 col-md-3">
                                     <Card className="h-100 shadow-sm" style={{
                                         backgroundColor: 'var(--bs-body-bg)',
                                         borderColor: 'var(--bs-border-color)'
@@ -386,7 +386,7 @@ const SubscriptionDetail: React.FC = () => {
                                         </Card.Footer>
                                     </Card>
                                 </div>
-                                <div className="col-12 col-md-3">
+                                <div className="col-6 col-md-3">
                                     <Card className="h-100 shadow-sm" style={{
                                         backgroundColor: 'var(--bs-body-bg)',
                                         borderColor: 'var(--bs-border-color)'
@@ -400,7 +400,7 @@ const SubscriptionDetail: React.FC = () => {
                                         </Card.Footer>
                                     </Card>
                                 </div>
-                                <div className="col-12 col-md-3">
+                                <div className="col-6 col-md-3">
                                     <Card className="h-100 shadow-sm" style={{
                                         backgroundColor: 'var(--bs-body-bg)',
                                         borderColor: 'var(--bs-border-color)'
@@ -414,7 +414,7 @@ const SubscriptionDetail: React.FC = () => {
                                         </Card.Footer>
                                     </Card>
                                 </div>
-                                <div className="col-12 col-md-3">
+                                <div className="col-6 col-md-3">
                                     <Card className="h-100 shadow-sm" style={{
                                         backgroundColor: 'var(--bs-body-bg)',
                                         borderColor: 'var(--bs-border-color)'

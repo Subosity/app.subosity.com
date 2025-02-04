@@ -25,53 +25,7 @@ import { Subscription } from '../types/Subscription';
 import { getOccurrencesInRange } from '../utils/recurrenceUtils';
 import EditSubscriptionModal from '../components/EditSubscriptionModal';
 import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
-
-
-
-const calculatePaymentSummary = (subscriptions: Subscription[]) => {
-
-    if (!subscriptions || subscriptions.length === 0) {
-        return {
-            daily: 0,
-            weekly: 0,
-            monthly: 0,
-            yearly: 0
-        };
-    }
-
-    const yearStart = new Date(new Date().getFullYear(), 0, 1); // January 1st
-    const yearEnd = new Date(new Date().getFullYear(), 11, 31); // December 31st
-
-    let yearlyTotal = 0;
-
-    subscriptions.forEach(sub => {
-        const occurrences = getOccurrencesInRange(
-            sub.recurrenceRule,
-            yearStart,
-            yearEnd
-        );
-        //console.log('Occurrences found:', occurrences);
-
-        const amount = sub.amount || 0;
-        const subTotal = amount * occurrences.length;
-        yearlyTotal += subTotal;
-
-        //console.log('Subtotal:', subTotal, 'Running total:', yearlyTotal);
-    });
-
-    // Calculate monthly, weekly, and daily averages based on the actual yearly total
-    const monthlyTotal = yearlyTotal / 12;
-    const weeklyTotal = yearlyTotal / 52.18; // Standard weeks per year (365.25/7)
-    const dailyTotal = yearlyTotal / 365.25;
-
-    return {
-        daily: dailyTotal,
-        weekly: weeklyTotal,
-        monthly: monthlyTotal,
-        yearly: yearlyTotal
-    };
-};
-
+import { calculatePaymentSummary } from '../utils/subscriptionUtils';
 
 const FundingDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -288,6 +242,9 @@ const FundingDetailPage: React.FC = () => {
                                                 <h4 className="mb-0">${filteredSummary.daily.toFixed(2)}</h4>
                                                 <h6 className="mb-0 text-muted">
                                                     of ${summary.daily.toFixed(2)} total
+                                                    <small style={{ "fontSize": "0.7rem" }}>
+                                                        {summary.daily > 0 && ` (${Math.round((filteredSummary.daily / summary.daily) * 100)}%)`}
+                                                    </small>
                                                 </h6>
                                             </>
                                         ) : (
@@ -312,6 +269,9 @@ const FundingDetailPage: React.FC = () => {
                                                 <h4 className="mb-0">${filteredSummary.weekly.toFixed(2)}</h4>
                                                 <h6 className="mb-0 text-muted">
                                                     of ${summary.weekly.toFixed(2)} total
+                                                    <small style={{ "fontSize": "0.7rem" }}>
+                                                        {summary.weekly > 0 && ` (${Math.round((filteredSummary.weekly / summary.weekly) * 100)}%)`}
+                                                    </small>
                                                 </h6>
                                             </>
                                         ) : (
@@ -336,6 +296,9 @@ const FundingDetailPage: React.FC = () => {
                                                 <h4 className="mb-0">${filteredSummary.monthly.toFixed(2)}</h4>
                                                 <h6 className="mb-0 text-muted">
                                                     of ${summary.monthly.toFixed(2)} total
+                                                    <small style={{ "fontSize": "0.7rem" }}>
+                                                        {summary.monthly > 0 && ` (${Math.round((filteredSummary.monthly / summary.monthly) * 100)}%)`}
+                                                    </small>
                                                 </h6>
                                             </>
                                         ) : (
@@ -360,6 +323,9 @@ const FundingDetailPage: React.FC = () => {
                                                 <h4 className="mb-0">${filteredSummary.yearly.toFixed(2)}</h4>
                                                 <h6 className="mb-0 text-muted">
                                                     of ${summary.yearly.toFixed(2)} total
+                                                    <small style={{ "fontSize": "0.7rem" }}>
+                                                        {summary.yearly > 0 && ` (${Math.round((filteredSummary.yearly / summary.yearly) * 100)}%)`}
+                                                    </small>
                                                 </h6>
                                             </>
                                         ) : (
