@@ -70,8 +70,10 @@ const FundingDetailPage: React.FC = () => {
     const { addToast } = useToast();
     const [fundingSource, setFundingSource] = useState<FundingSource | null>(null);
     const [loading, setLoading] = useState(true);
-    const [showEdit, setShowEdit] = useState(false);
-    const [showDelete, setShowDelete] = useState(false);
+    const [showEditFunding, setShowEditFunding] = useState(false);
+    const [showDeleteFunding, setShowDeleteFunding] = useState(false);
+    const [showEditSubscription, setShowEditSubscription] = useState(false);
+    const [showDeleteSubscription, setShowDeleteSubscription] = useState(false);
     const [showUnable, setShowUnable] = useState(false);
     const [subscriptionCount, setSubscriptionCount] = useState(0);
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -231,12 +233,14 @@ const FundingDetailPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="d-flex align-items-center gap-2">
-                                <Button variant="outline-primary" size="sm" className="d-inline-flex align-items-center" onClick={() => setShowEdit(true)}>
+                                <Button variant="outline-primary" size="sm" 
+                                    className="d-inline-flex align-items-center" onClick={() => setShowEditFunding(true)}>
                                     <FontAwesomeIcon icon={faEdit} className="me-2" />
                                     Edit
                                 </Button>
-                                <Button variant="outline-danger" size="sm" className="d-inline-flex align-items-center"
-                                    onClick={() => subscriptionCount > 0 ? setShowUnable(true) : setShowDelete(true)}>
+                                <Button variant="outline-danger" size="sm" 
+                                    className="d-inline-flex align-items-center"
+                                    onClick={() => subscriptionCount > 0 ? setShowUnable(true) : setShowDeleteFunding(true)}>
                                     <FontAwesomeIcon icon={faTrash} className="me-2" />
                                     Delete
                                 </Button>
@@ -244,7 +248,7 @@ const FundingDetailPage: React.FC = () => {
                         </div>
 
                         <div className="row g-3">
-                            <div className="col-12 col-md-3">
+                            <div className="col-6 col-md-3">
                                 <Card className="h-100 shadow-sm" style={{
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
@@ -259,7 +263,7 @@ const FundingDetailPage: React.FC = () => {
                                     </Card.Footer>
                                 </Card>
                             </div>
-                            <div className="col-12 col-md-3">
+                            <div className="col-6 col-md-3">
                                 <Card className="h-100 shadow-sm" style={{
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
@@ -274,7 +278,7 @@ const FundingDetailPage: React.FC = () => {
                                     </Card.Footer>
                                 </Card>
                             </div>
-                            <div className="col-12 col-md-3">
+                            <div className="col-6 col-md-3">
                                 <Card className="h-100 shadow-sm" style={{
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
@@ -289,7 +293,7 @@ const FundingDetailPage: React.FC = () => {
                                     </Card.Footer>
                                 </Card>
                             </div>
-                            <div className="col-12 col-md-3">
+                            <div className="col-6 col-md-3">
                                 <Card className="h-100 shadow-sm" style={{
                                     backgroundColor: 'var(--bs-body-bg)',
                                     borderColor: 'var(--bs-border-color)'
@@ -333,8 +337,8 @@ const FundingDetailPage: React.FC = () => {
             </Card>
 
             <EditFundingModal
-                show={showEdit}
-                onHide={() => setShowEdit(false)}
+                show={showEditFunding}
+                onHide={() => setShowEditFunding(false)}
                 fundingSource={fundingSource}
                 onSubmit={async () => {
                     await fetchFundingSource();
@@ -343,8 +347,8 @@ const FundingDetailPage: React.FC = () => {
             />
 
             <DeleteFundingModal
-                show={showDelete}
-                onHide={() => setShowDelete(false)}
+                show={showDeleteFunding}
+                onHide={() => setShowDeleteFunding(false)}
                 fundingSource={fundingSource}
                 onDelete={() => {
                     navigate('/funding');
@@ -359,8 +363,8 @@ const FundingDetailPage: React.FC = () => {
             />
 
             <EditSubscriptionModal
-                show={showEdit}
-                onHide={() => setShowEdit(false)}
+                show={showEditSubscription}
+                onHide={() => setShowEditSubscription(false)}
                 subscription={selectedSubscription}
                 onSubmit={async () => {
                     await fetchFundingSource(); // Refresh the data
@@ -369,8 +373,8 @@ const FundingDetailPage: React.FC = () => {
             />
 
             <DeleteSubscriptionModal
-                show={showDelete}
-                onHide={() => setShowDelete(false)}
+                show={showDeleteSubscription}
+                onHide={() => setShowDeleteSubscription(false)}
                 subscription={selectedSubscription}
                 onDelete={async () => {
                     await fetchFundingSource(); // Refresh the data
