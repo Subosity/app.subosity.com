@@ -184,10 +184,14 @@ const Dashboard: React.FC = () => {
             category,
             icon
           ),
-          payment_provider:payment_provider_id(
+          funding_source:funding_source_id(
             id,
             name,
-            icon
+            payment_provider:payment_provider_id(
+              id,
+              name,
+              icon
+            )
           ),
           subscription_history!inner(
             state,
@@ -214,7 +218,7 @@ const Dashboard: React.FC = () => {
 
       // Process data for charts
       const categories = {};
-      const paymentProviders = {};
+      const fundingSources = {};  // Changed from paymentProviders
       
       let yearlyTotal = 0;
       const now = new Date();
@@ -227,12 +231,13 @@ const Dashboard: React.FC = () => {
         const yearCost = yearOccurrences * amount;
         yearlyTotal += yearCost;
         
-        // Aggregate categories and payment providers
+        // Aggregate categories
         const category = sub.subscription_provider?.category || 'Unknown';
         categories[category] = (categories[category] || 0) + 1;
         
-        const provider = sub.payment_provider?.name || 'Unknown';
-        paymentProviders[provider] = (paymentProviders[provider] || 0) + 1;
+        // Aggregate funding sources instead of payment providers
+        const fundingSourceName = sub.funding_source?.name || 'Unknown';
+        fundingSources[fundingSourceName] = (fundingSources[fundingSourceName] || 0) + 1;
       });
 
       setStats({
@@ -246,9 +251,9 @@ const Dashboard: React.FC = () => {
           labels: Object.keys(categories),
           values: Object.values(categories)
         },
-        paymentData: {
-          labels: Object.keys(paymentProviders),
-          values: Object.values(paymentProviders)
+        paymentData: {  // Keep same name to avoid changing interface
+          labels: Object.keys(fundingSources),
+          values: Object.values(fundingSources)
         },
         stateDistribution: calculateStats(subscriptions).stateDistribution
       });
@@ -550,7 +555,7 @@ const Dashboard: React.FC = () => {
                 <Card.Header className="bg-body-tertiary py-3">
                   <h5 className="mb-0">
                     <FontAwesomeIcon icon={faCreditCard} className="me-2" />
-                    Payment Methods
+                    Funding Sources
                   </h5>
                 </Card.Header>
                 <Card.Body>
