@@ -8,7 +8,6 @@ import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard'
 import MySubscriptions from './pages/MySubscriptions'
-import About from './pages/About'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Login from './pages/auth/Login'
@@ -18,18 +17,17 @@ import ChangePassword from './pages/auth/ChangePassword'
 import Profile from './pages/auth/Profile'
 import Preferences from './pages/auth/Preferences'
 import SubscriptionDetail from './pages/SubscriptionDetail'
-import { supabase } from './supabaseClient';
-import Home from './pages/Home';
-import Pricing from './pages/Pricing';
 import ProtectedRoute from './components/ProtectedRoute';
 import CalendarPage from './pages/CalendarPage';
 import FundingPage from './pages/FundingPage';
 import FundingDetailPage from './pages/FundingDetailPage';
+import { UpdateNotification } from './components/UpdateNotification';
 
 const AppContent: React.FC = () => {
 
     return (
         <div className="d-flex flex-column min-vh-100">
+            <UpdateNotification />
             <Navigation
             />
             <main className="flex-grow-1">
@@ -39,10 +37,8 @@ const AppContent: React.FC = () => {
                             <Dashboard />
                         </ProtectedRoute>
                     } />
-                    {/* <Route path="/about" element={<About />} /> */}
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
-                    {/* <Route path="/pricing" element={<Pricing />} /> */}
 
                     {/* Protected Routes */}
                     <Route path="/dashboard" element={

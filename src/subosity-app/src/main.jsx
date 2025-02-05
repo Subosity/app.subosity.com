@@ -10,6 +10,7 @@ const updateSW = registerSW({
   onNeedRefresh() {
     // Handle updates
     console.log('New content available, please refresh')
+    window.dispatchEvent(new CustomEvent('pwaUpdateAvailable'));
   },
   onOfflineReady() {
     // Handle offline mode ready
