@@ -435,11 +435,12 @@ const Dashboard: React.FC = () => {
         <>
           {/* Summary Cards */}
           <Row className="g-4 mb-4">
-            <Col xs={12} md={6} lg={3}>
+            <Col xs={6} md={6} lg={3}>
               <Card className="h-100 shadow">
                 <Card.Header className="bg-body-tertiary">
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="text-body-secondary">Active Subscriptions</div>
+                  <div className="text-body-secondary d-none d-md-block">Active Subscriptions</div>
+                  <div className="text-body-secondary d-block d-md-none">Active</div>
                     <div className="bg-success bg-opacity-50 p-2 rounded-3 shadow-sm"
                       style={{
                         width: '40px', height: '40px', display: 'flex',
@@ -455,11 +456,33 @@ const Dashboard: React.FC = () => {
               </Card>
             </Col>
 
-            <Col xs={12} md={6} lg={3}>
+            <Col xs={6} md={6} lg={3}>
               <Card className="h-100 shadow">
                 <Card.Header className="bg-body-tertiary">
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="text-body-secondary">Monthly Cost</div>
+                  <div className="text-body-secondary d-none d-md-block">Daily Cost</div>
+                  <div className="text-body-secondary d-block d-md-none">Daily</div>
+                    <div className="bg-danger bg-opacity-50 p-2 rounded-3 shadow-sm"
+                      style={{
+                        width: '40px', height: '40px', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center'
+                      }}>
+                      <FontAwesomeIcon icon={faHandHoldingDollar} className="text-white text-opacity-50" />
+                    </div>
+                  </div>
+                </Card.Header>
+                <Card.Body className="d-flex justify-content-center align-items-center">
+                  <h3 className="mb-0 text-body">${stats.totalDaily.toFixed(2)}</h3>
+                </Card.Body>
+              </Card>
+            </Col>
+            
+            <Col xs={6} md={6} lg={3}>
+              <Card className="h-100 shadow">
+                <Card.Header className="bg-body-tertiary">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="text-body-secondary d-none d-md-block">Monthly Cost</div>
+                    <div className="text-body-secondary d-block d-md-none">Monthly</div>
                     <div className="bg-info bg-opacity-50 p-2 rounded-3 shadow-sm"
                       style={{
                         width: '40px', height: '40px', display: 'flex',
@@ -475,11 +498,12 @@ const Dashboard: React.FC = () => {
               </Card>
             </Col>
 
-            <Col xs={12} md={6} lg={3}>
+            <Col xs={6} md={6} lg={3}>
               <Card className="h-100 shadow">
                 <Card.Header className="bg-body-tertiary">
                   <div className="d-flex justify-content-between align-items-center">
-                    <div className="text-body-secondary">Yearly Cost</div>
+                  <div className="text-body-secondary d-none d-md-block">Yearly Cost</div>
+                  <div className="text-body-secondary d-block d-md-none">Yearly</div>
                     <div className="bg-warning bg-opacity-50 p-2 rounded-3 shadow-sm"
                       style={{
                         width: '40px', height: '40px', display: 'flex',
@@ -491,26 +515,6 @@ const Dashboard: React.FC = () => {
                 </Card.Header>
                 <Card.Body className="d-flex justify-content-center align-items-center">
                   <h3 className="mb-0 text-body">${stats.totalYearly.toFixed(2)}</h3>
-                </Card.Body>
-              </Card>
-            </Col>
-
-            <Col xs={12} md={6} lg={3}>
-              <Card className="h-100 shadow">
-                <Card.Header className="bg-body-tertiary">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div className="text-body-secondary">Daily Cost</div>
-                    <div className="bg-danger bg-opacity-50 p-2 rounded-3 shadow-sm"
-                      style={{
-                        width: '40px', height: '40px', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center'
-                      }}>
-                      <FontAwesomeIcon icon={faHandHoldingDollar} className="text-white text-opacity-50" />
-                    </div>
-                  </div>
-                </Card.Header>
-                <Card.Body className="d-flex justify-content-center align-items-center">
-                  <h3 className="mb-0 text-body">${stats.totalDaily.toFixed(2)}</h3>
                 </Card.Body>
               </Card>
             </Col>
