@@ -1,42 +1,104 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Subosity</title>
+  <head>
+    <meta charset="utf-8" />
+    <title>Subosity</title>
 
-  <meta property="og:image" content="https://app.subosity.com/favicon-192x192.png">
-  <meta property="og:image:secure_url" content="https://app.subosity.com/favicon-192x192.png">
+    <meta
+      property="og:image"
+      content="https://app.subosity.com/favicon-192x192.png"
+    />
+    <meta
+      property="og:image:secure_url"
+      content="https://app.subosity.com/favicon-192x192.png"
+    />
 
-  <link rel="icon" type="image/png" sizes="16x16" href="https://app.subosity.com/favicon-16x16.png" onerror="this.href='/favicon-16x16.png'" />
-  <link rel="icon" type="image/png" sizes="32x32" href="https://app.subosity.com/favicon-32x32.png" onerror="this.href='/favicon-32x32.png'" />
-  <link rel="icon" type="image/png" sizes="48x48" href="https://app.subosity.com/favicon-48x48.png" onerror="this.href='/favicon-48x48.png'" />
-  <link rel="icon" type="image/png" sizes="192x192" href="https://app.subosity.com/favicon-192x192.png" onerror="this.href='/favicon-192x192.png'" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://app.subosity.com/favicon-16x16.png"
+      onerror="this.href='/favicon-16x16.png'"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="https://app.subosity.com/favicon-32x32.png"
+      onerror="this.href='/favicon-32x32.png'"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="48x48"
+      href="https://app.subosity.com/favicon-48x48.png"
+      onerror="this.href='/favicon-48x48.png'"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="https://app.subosity.com/favicon-192x192.png"
+      onerror="this.href='/favicon-192x192.png'"
+    />
 
-  <link rel="icon" type="image/png" sizes="96x96" href="https://app.subosity.com/favicon-96x96.png" onerror="this.href='/favicon-96x96.png'" />
-  <link rel="icon" type="image/svg+xml" href="https://app.subosity.com/favicon.svg" onerror="this.href='/favicon.svg'" />
-  <link rel="shortcut icon" href="https://app.subosity.com/favicon.ico" onerror="this.href='/favicon.ico'" />
-  <link rel="apple-touch-icon" sizes="180x180" href="https://app.subosity.com/apple-touch-icon.png" onerror="this.href='/apple-touch-icon.png'" />
-  <meta name="apple-mobile-web-app-title" content="Subosity" />
-  <!-- <link rel="manifest" href="/manifest.json" /> -->
-  
-  <script type="text/javascript">
-    var segmentCount = 0;
-    var l = window.location;
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      '/' +
-      l.pathname.slice(1).split('/').slice(segmentCount).join('/') +
-      (l.search ? '&q=' + l.search.slice(1) : '') +
-      l.hash
-    );
-  </script>
-</head>
-<body>
-  Redirecting...
-  <!-- Hidden form for password manager context -->
-  <form style="display: none;">
-    <input type="text" name="username" autocomplete="username" />
-    <input type="password" name="current-password" autocomplete="current-password" />
-  </form>
-</body>
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="https://app.subosity.com/favicon-96x96.png"
+      onerror="this.href='/favicon-96x96.png'"
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https://app.subosity.com/favicon.svg"
+      onerror="this.href='/favicon.svg'"
+    />
+    <link
+      rel="shortcut icon"
+      href="https://app.subosity.com/favicon.ico"
+      onerror="this.href='/favicon.ico'"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://app.subosity.com/apple-touch-icon.png"
+      onerror="this.href='/apple-touch-icon.png'"
+    />
+    <meta name="apple-mobile-web-app-title" content="Subosity" />
+    <!-- <link rel="manifest" href="/manifest.json" /> -->
+
+    <script type="text/javascript">
+      var l = window.location;
+      if (l.pathname.indexOf("404.html") > -1) {
+        document.title = "404 Not Found";
+        document.body.innerHTML = "404 Not Found";
+      } else {
+        var segmentCount = 0;
+        l.replace(
+          l.protocol +
+            "//" +
+            l.hostname +
+            (l.port ? ":" + l.port : "") +
+            "/" +
+            l.pathname.slice(1).split("/").slice(segmentCount).join("/") +
+            (l.search ? "&q=" + l.search.slice(1) : "") +
+            l.hash
+        );
+      }
+    </script>
+  </head>
+  <body>
+    Redirecting...
+    <!-- Hidden form for password manager context -->
+    <form style="display: none">
+      <input type="text" name="username" autocomplete="username" />
+      <input
+        type="password"
+        name="current-password"
+        autocomplete="current-password"
+      />
+    </form>
+  </body>
 </html>
