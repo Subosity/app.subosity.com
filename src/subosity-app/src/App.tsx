@@ -3,7 +3,7 @@ import { ToastProvider } from './ToastContext';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './AuthContext';
 import { AlertsProvider } from './AlertsContext';
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useSearchParams, useNavigate } from 'react-router-dom'
 import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard'
@@ -24,12 +24,28 @@ import FundingDetailPage from './pages/FundingDetailPage';
 import { UpdateNotification } from './components/UpdateNotification';
 import NotFound from './pages/NotFound';
 
+const NormalizeUrl: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const p = searchParams.get('p');
+    if (p) {
+      // Redirect to the normalized URL without the query parameter
+      navigate(p, { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  return null;
+};
+
 const AppContent: React.FC = () => {
 
     return (
         <div className="d-flex flex-column min-vh-100">
             <UpdateNotification />
             <Navigation />
+            <NormalizeUrl />
             <main className="flex-grow-1">
                 <Routes>
                     <Route path="/" element={
