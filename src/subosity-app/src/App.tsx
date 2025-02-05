@@ -22,14 +22,14 @@ import CalendarPage from './pages/CalendarPage';
 import FundingPage from './pages/FundingPage';
 import FundingDetailPage from './pages/FundingDetailPage';
 import { UpdateNotification } from './components/UpdateNotification';
+import NotFound from './pages/NotFound';
 
 const AppContent: React.FC = () => {
 
     return (
         <div className="d-flex flex-column min-vh-100">
             <UpdateNotification />
-            <Navigation
-            />
+            <Navigation />
             <main className="flex-grow-1">
                 <Routes>
                     <Route path="/" element={
@@ -87,6 +87,11 @@ const AppContent: React.FC = () => {
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/change-password" element={<ChangePassword />} />
+
+                    {/* Fix the catch-all route */}
+                    <Route path="*" element={
+                        <NotFound />
+                    } />
                 </Routes>
             </main>
             <Footer />
