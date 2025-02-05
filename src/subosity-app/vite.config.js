@@ -34,5 +34,28 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
-  ]
+  ],
+  server: {
+    fs: {
+      strict: false,
+      allow: ['..']
+    }
+  },
+  // Add publicDir configuration
+  publicDir: 'public',
+  build: {
+    // Ensure static assets are copied to build output
+    assetsDir: '',
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          // Keep original filenames for static files
+          if (assetInfo.name.match(/\.(txt|json|xml)$/)) {
+            return '[name][extname]'
+          }
+          return 'assets/[name]-[hash][extname]'
+        }
+      }
+    }
+  }
 })
