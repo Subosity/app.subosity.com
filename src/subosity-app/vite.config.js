@@ -32,7 +32,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        exclude: ['version.txt'],
+        globIgnores: ['**/version.txt'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
@@ -51,25 +51,13 @@ export default defineConfig({
       }
     })
   ],
-  server: {
-    fs: {
-      strict: false,
-      allow: ['..']
-    }
-  },
-  // Add publicDir configuration
-  publicDir: 'public',
   build: {
-    // Ensure static assets are copied to build output
-    assetsDir: '',
     rollupOptions: {
       output: {
-        assetFileNames: (assetInfo) => {
-          // Keep original filenames for static files
-          if (assetInfo.name.match(/\.(txt|json|xml)$/)) {
-            return '[name][extname]'
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor'
           }
-          return 'assets/[name]-[hash][extname]'
         }
       }
     }
