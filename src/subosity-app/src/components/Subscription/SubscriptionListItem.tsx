@@ -39,7 +39,7 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
 
     return (
         <div
-            className="d-flex p-3 border-bottom shadow position-relative"
+            className="d-flex p-2 border-bottom shadow position-relative"
             style={{
                 backgroundColor: 'var(--bs-body-bg)',
                 color: 'var(--bs-body-color)',

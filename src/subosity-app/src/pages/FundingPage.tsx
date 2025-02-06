@@ -274,7 +274,7 @@ const FundingPage = () => {
             ) : (
                 <>
                     {viewMode === 'card' ? (
-                        <div className="row g-4">
+                        <div className="row g-2">
                             {filteredSources.map(source => (
                                 <div key={source.id} className="col-12 col-md-6 col-lg-4">
                                     <FundingCard

@@ -298,7 +298,7 @@ const SubscriptionBrowser: React.FC<Props> = ({
             ) : (
                 <>
                     {viewMode === 'card' ? (
-                        <div className="row g-4">
+                        <div className="row g-2">
                             {filteredAndSortedSubscriptions.map(subscription => (
                                 <div key={subscription.id} className="col-12 col-md-6 col-lg-4">
                                     <SubscriptionCard

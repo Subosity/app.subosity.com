@@ -48,7 +48,7 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
             }}
             onClick={handleCardClick}
         >
-            <Card.Body className="d-flex flex-column"> {/* Add flex-column */}
+            <Card.Body className="d-flex flex-column p-2"> {/* Add flex-column */}
                 {/* Top section with provider info */}
                 <div className="d-flex justify-content-between align-items-start w-100">
                     <div className="d-flex align-items-center me-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
@@ -78,7 +78,7 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                                     {subscription.providerDescription}
                                 </div>
                             )}
-                            <div style={{ color: 'var(--bs-body-color)' }}>
+                            <div className='d-flex justify-content-between align-items-center' style={{ color: 'var(--bs-body-color)' }}>
                                 ${subscription.amount}&nbsp;
                                 <RecurrenceComponent
                                     subscription={subscription}
@@ -87,7 +87,9 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                                 />
                             </div>
                             <div className="mt-2">
-                                <Badge bg={subscription.autoRenewal ? 'success' : 'secondary'}>
+                                <Badge
+                                    bg={subscription.autoRenewal ? 'success' : 'secondary'}
+                                    className="p-1">
                                     <FontAwesomeIcon
                                         icon={subscription.autoRenewal ? faRotate : faHand}
                                         className="me-2"

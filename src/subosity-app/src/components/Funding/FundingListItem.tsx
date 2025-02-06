@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faLayerGroup, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faHandHoldingDollar, faLayerGroup, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FundingSource } from '../../types/FundingSource';
 import { useNavigate } from 'react-router-dom';
 import { ProviderIcon } from '../ProviderIcon';
@@ -51,35 +51,42 @@ const FundingListItem: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) =
                             {fundingSource.description}
                         </div>
                     </div>
-                    <div className="d-flex flex-column align-items-end">
-                        <div className="text-body-secondary small mb-2">
-                            {fundingSource.subscriptions.length}
-                            {' '}subscription{fundingSource.subscriptions.length !== 1 ? 's' : ''}
-                        </div>
-                        <Badge bg="success" className="py-1 px-2">
-                            <FontAwesomeIcon icon={faLayerGroup} className="me-2" />
-                            {fundingSource.funding_type}
-                        </Badge>
-                    </div>
                 </div>
             </div>
 
             {/* Actions container */}
-            <div className="ms-3 d-flex align-items-center">
-                <Button
-                    variant="link"
-                    className="text-body-secondary p-0 me-3"
-                    onClick={() => onEdit(fundingSource)}
-                >
-                    <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button
-                    variant="link"
-                    className="text-danger p-0"
-                    onClick={() => onDelete(fundingSource)}
-                >
-                    <FontAwesomeIcon icon={faTrash} />
-                </Button>
+            <div className="ms-3 d-flex flex-column align-items-end">
+                {/* Top Row: Edit and Delete buttons */}
+                <div className="d-flex mb-2">
+                    <Button
+                        variant="link"
+                        className="text-body-secondary p-0 me-3"
+                        onClick={() => onEdit(fundingSource)}
+                    >
+                        <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+                    <Button
+                        variant="link"
+                        className="text-danger p-0"
+                        onClick={() => onDelete(fundingSource)}
+                    >
+                        <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                </div>
+
+                {/* Bottom Row: Subscription and Funding Type badges */}
+                <div className="d-flex flex-column align-items-end small">
+                    <div className="text-body-secondary mb-1">
+                        <Badge bg="info">
+                            <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
+                            {fundingSource.subscriptions.length} Subscription{fundingSource.subscriptions.length !== 1 ? 's' : ''}
+                        </Badge>
+                    </div>
+                    <Badge bg="success">
+                        <FontAwesomeIcon icon={faLayerGroup} className="me-2" />
+                        {fundingSource.funding_type}
+                    </Badge>
+                </div>
             </div>
         </div>
     );
