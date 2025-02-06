@@ -40,6 +40,7 @@ import SubscriptionTimeline from '../components/Subscription/SubscriptionTimelin
 import RecurrenceComponent from '../components/RecurrenceComponent';
 import { getOccurrencesInRange } from '../utils/recurrenceUtils';
 import { SubscriptionProviderIcon } from '../components/SubscriptionProvider/SubscriptionProviderIcon';
+import { ProviderIcon } from '../components/ProviderIcon';
 
 const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -263,7 +264,7 @@ const SubscriptionDetail: React.FC = () => {
                                 {/* Column 1: Provider Identity */}
                                 <div className="col-12 col-lg-6">
                                     <div className="d-flex">
-                                        <SubscriptionProviderIcon
+                                        <ProviderIcon
                                             icon={subscription.providerIcon}
                                             name={subscription.providerName}
                                             size={64}
@@ -341,7 +342,7 @@ const SubscriptionDetail: React.FC = () => {
                         <div className="d-flex justify-content-between align-items-center mt-4">
                             <div>
                                 <Button
-                                    variant="outline-secondary"
+                                    variant={showTimeline ? 'secondary' : 'outline-secondary'}
                                     size="sm"
                                     className="d-inline-flex align-items-center me-2"
                                     onClick={() => setShowTimeline(!showTimeline)}
@@ -352,7 +353,7 @@ const SubscriptionDetail: React.FC = () => {
                                     </span>
                                 </Button>
                                 <Button
-                                    variant="outline-secondary"
+                                    variant={showFunding ? 'secondary' : 'outline-secondary'}
                                     size="sm"
                                     className="d-inline-flex align-items-center"
                                     onClick={() => setShowFunding(!showFunding)}
@@ -402,13 +403,13 @@ const SubscriptionDetail: React.FC = () => {
                                             title='Click to go to Funding Source'
                                         >
                                             <div className="d-flex align-items-center">
-                                                <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
-                                                    <img
-                                                        src={subscription.fundingSource?.paymentProviderIcon}
-                                                        alt={subscription.fundingSource?.paymentProviderName}
-                                                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                                                    />
-                                                </div>
+                                                <ProviderIcon
+                                                    icon={subscription.fundingSource?.paymentProviderIcon}
+                                                    name={subscription.fundingSource?.paymentProviderName}
+                                                    size={24}
+                                                    zoomPercentage='300%'
+                                                    borderRadius='2px'
+                                                />
                                                 {subscription.fundingSource?.name}
                                             </div>
                                         </Link>

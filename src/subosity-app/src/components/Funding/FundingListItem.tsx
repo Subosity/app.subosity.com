@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faLayerGroup, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FundingSource } from '../../types/FundingSource';
 import { useNavigate } from 'react-router-dom';
+import { ProviderIcon } from '../ProviderIcon';
 
 interface Props {
     fundingSource: FundingSource;
@@ -26,29 +27,17 @@ const FundingListItem: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) =
             backgroundColor: 'var(--bs-body-bg)',
             color: 'var(--bs-body-color)',
             borderColor: 'var(--bs-border-color) !important',
-            minHeight: '80px'
+            minHeight: '80px',
+            cursor: 'pointer'
         }}
             onClick={handleCardClick}
-            style={{ cursor: 'pointer' }}
         >
             {/* Icon container */}
-            <div className="rounded-circle d-flex align-items-center justify-content-center me-3" style={{
-                width: '40px',
-                height: '40px',
-                backgroundColor: 'var(--bs-gray-200)',
-                flexShrink: 0,
-                overflow: 'hidden'
-            }}>
-                <img
-                    src={fundingSource.paymentProvider.icon}
-                    alt=""
-                    style={{
-                        width: '150%',
-                        height: '150%',
-                        objectFit: 'contain'
-                    }}
-                />
-            </div>
+            <ProviderIcon
+                icon={fundingSource.paymentProvider.icon}
+                name={fundingSource.paymentProvider.name}
+                size={40}
+            />
 
             {/* Content container */}
             <div className="flex-grow-1">
@@ -64,7 +53,7 @@ const FundingListItem: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) =
                     </div>
                     <div className="d-flex flex-column align-items-end">
                         <div className="text-body-secondary small mb-2">
-                            {fundingSource.subscriptions.length} 
+                            {fundingSource.subscriptions.length}
                             {' '}subscription{fundingSource.subscriptions.length !== 1 ? 's' : ''}
                         </div>
                         <Badge bg="success" className="py-1 px-2">

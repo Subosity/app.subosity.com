@@ -13,6 +13,7 @@ import SubscriptionCard from '../components/Subscription/SubscriptionCard';
 import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
 import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
 import { useToast } from '../ToastContext';
+import { ProviderIcon } from '../components/ProviderIcon';
 
 const localizer = momentLocalizer(moment);
 
@@ -42,7 +43,7 @@ const CalendarPage: React.FC = () => {
     const { theme } = useTheme();
     const isDarkMode = theme === 'Dark' || (theme === 'Auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     const { addToast } = useToast();
-        const [currentView, setCurrentView] = useState<View>('month');
+    const [currentView, setCurrentView] = useState<View>('month');
 
     const fetchSubscriptionEvents = async (start: Date) => {
         const { data: subscriptions, error } = await supabase
@@ -154,145 +155,164 @@ const CalendarPage: React.FC = () => {
     };
 
     const eventRenderer = ({ event }: { event: CalendarEvent }) => (
-        <div className="d-flex align-items-center">
-            <div className="rounded-circle bg-light d-flex align-items-center justify-content-center me-2"
-                style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '4px',
-                    aspectRatio: '1 / 1',
-                    backgroundColor: 'var(--bs-white)',
-                    overflow: 'hidden'
-                }}>
-                <img
-                    src={event.resource.providerLogo}
-                    alt={event.subscription.providerName}
-                    style={{
-                        width: '150%',
-                        height: '150%',
-                        objectFit: 'contain',
-                        padding: '2px'
-                    }}
+    <>
+        {/* Mobile View */}
+        <div className="d-flex d-md-none align-items-center justify-content-between">
+            {/* Left: SubscriptionProviderIcon with no extra right margin */}
+            <div>
+                <ProviderIcon
+                    icon={event.resource.providerLogo}
+                    name={event.subscription.providerName}
+                    size={19}
+                    zoomPercentage="1650%"
+                    borderRadius="4px"
+                    containerClassName='me-0'
                 />
             </div>
-            <span className="d-none d-md-block" style={{ fontSize: '0.75em', marginRight: 'auto' }}>
+
+            {/* Center: Amount only visible from md and up */}
+            <span className="d-none d-md-block flex-grow-1 text-center" style={{ fontSize: '0.75em' }}>
                 ${event.resource.amount.toFixed(2)}
             </span>
-            <div className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '4px',
-                    aspectRatio: '1 / 1',
-                    backgroundColor: 'var(--bs-white)',
-                    overflow: 'hidden'
-                }}>
-                <img
-                    src={event.resource.paymentIcon}
-                    alt={event.subscription.paymentProviderName}
-                    style={{
-                        width: '150%',
-                        height: '150%',
-                        objectFit: 'contain',
-                        padding: '2px'
-                    }}
+
+            {/* Right: PaymentProviderIcon with no extra left margin */}
+            <div>
+                <ProviderIcon
+                    icon={event.resource.paymentIcon}
+                    name={event.subscription.fundingSource.paymentProviderName}
+                    size={19}
+                    zoomPercentage="1650%"
+                    borderRadius="4px"
+                    containerClassName='me-0'
                 />
             </div>
         </div>
+
+        {/* Desktop View */}
+        <div className="d-none d-md-flex align-items-center justify-content-between">
+            {/* Left: SubscriptionProviderIcon with no extra right margin */}
+            <div>
+                <ProviderIcon
+                    icon={event.resource.providerLogo}
+                    name={event.subscription.providerName}
+                    size={20}
+                    zoomPercentage="850%"
+                    borderRadius="4px"
+                />
+            </div>
+
+            {/* Center: Amount only visible from md and up */}
+            <span className="d-none d-md-block flex-grow-1 text-center" style={{ fontSize: '0.75em' }}>
+                ${event.resource.amount.toFixed(2)}
+            </span>
+
+            {/* Right: PaymentProviderIcon with no extra left margin */}
+            <div>
+                <ProviderIcon
+                    icon={event.resource.paymentIcon}
+                    name={event.subscription.fundingSource.paymentProviderName}
+                    size={20}
+                    zoomPercentage="850%"
+                    borderRadius="4px"
+                    containerClassName='me-0'
+                />
+            </div>
+        </div>
+    </>
     );
 
-    return (
-        <Container className="mt-4">
-            <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                className={`calendar-container ${isDarkMode ? 'theme-dark' : 'theme-light'} ${currentView === 'week' ? 'week-view' : ''}`}
-                style={{
-                    backgroundColor: 'var(--bs-body-bg)',
-                    color: 'var(--bs-body-color)'
-                }}
-                views={['week', 'month']}
-                defaultView="month"
-                onNavigate={(date) => {
-                    setCurrentDate(date);
-                    fetchSubscriptionEvents(date);
-                }}
-                onView={(view) => setCurrentView(view)}
-                onSelectEvent={handleSelectEvent}
-                onShowMore={handleShowMore}
-                onSelectSlot={handleSelectSlot}
-                selectable={false}
-                components={{
-                    event: eventRenderer
-                }}
-            />
+return (
+    <Container className="mt-4">
+        <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            className={`calendar-container ${isDarkMode ? 'theme-dark' : 'theme-light'} ${currentView === 'week' ? 'week-view' : ''}`}
+            style={{
+                backgroundColor: 'var(--bs-body-bg)',
+                color: 'var(--bs-body-color)'
+            }}
+            views={['week', 'month']}
+            defaultView="month"
+            onNavigate={(date) => {
+                setCurrentDate(date);
+                fetchSubscriptionEvents(date);
+            }}
+            onView={(view) => setCurrentView(view)}
+            onSelectEvent={handleSelectEvent}
+            onShowMore={handleShowMore}
+            onSelectSlot={handleSelectSlot}
+            selectable={false}
+            components={{
+                event: eventRenderer
+            }}
+        />
 
-            <Modal
-                show={showModal}
-                onHide={() => setShowModal(false)}
-                className={isDarkMode ? 'theme-dark' : 'theme-light'}
-            >
-                <Modal.Header closeButton>
-                    <Modal.Title>
-                        {selectedDate ? moment(selectedDate).format('MMMM D, YYYY') : ''}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedDate && (
-                        <>
-                            {events.filter(event => moment(event.start).isSame(selectedDate, 'day')).length === 0 ? (
-                                <div className="text-center text-muted py-4">
-                                    No subscription renewals scheduled for this day
-                                </div>
-                            ) : (
-                                events
-                                    .filter(event => moment(event.start).isSame(selectedDate, 'day'))
-                                    .map(event => (
-                                        <div key={event.id} className="mb-2">
-                                            <SubscriptionCard
-                                                key={event.subscription.id}
-                                                subscription={event.subscription}
-                                                onEdit={(sub) => {
-                                                    setSelectedSubscription(sub);
-                                                    setShowEdit(true);
-                                                    setShowModal(false);
-                                                }}
-                                                onDelete={(sub) => {
-                                                    setSelectedSubscription(sub);
-                                                    setShowDelete(true);
-                                                    setShowModal(false);
-                                                }}
-                                            />
-                                        </div>
-                                    ))
-                            )}
-                        </>
-                    )}
-                </Modal.Body>
-            </Modal>
-            <DeleteSubscriptionModal
-                show={showDelete}
-                onHide={() => setShowDelete(false)}
-                subscription={selectedSubscription}
-                onDelete={async () => {
-                    await fetchSubscriptionEvents(currentDate); // Refresh the list
-                    setShowDelete(false);
-                }}
-            />
+        <Modal
+            show={showModal}
+            onHide={() => setShowModal(false)}
+            className={isDarkMode ? 'theme-dark' : 'theme-light'}
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>
+                    {selectedDate ? moment(selectedDate).format('MMMM D, YYYY') : ''}
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {selectedDate && (
+                    <>
+                        {events.filter(event => moment(event.start).isSame(selectedDate, 'day')).length === 0 ? (
+                            <div className="text-center text-muted py-4">
+                                No subscription renewals scheduled for this day
+                            </div>
+                        ) : (
+                            events
+                                .filter(event => moment(event.start).isSame(selectedDate, 'day'))
+                                .map(event => (
+                                    <div key={event.id} className="mb-2">
+                                        <SubscriptionCard
+                                            key={event.subscription.id}
+                                            subscription={event.subscription}
+                                            onEdit={(sub) => {
+                                                setSelectedSubscription(sub);
+                                                setShowEdit(true);
+                                                setShowModal(false);
+                                            }}
+                                            onDelete={(sub) => {
+                                                setSelectedSubscription(sub);
+                                                setShowDelete(true);
+                                                setShowModal(false);
+                                            }}
+                                        />
+                                    </div>
+                                ))
+                        )}
+                    </>
+                )}
+            </Modal.Body>
+        </Modal>
+        <DeleteSubscriptionModal
+            show={showDelete}
+            onHide={() => setShowDelete(false)}
+            subscription={selectedSubscription}
+            onDelete={async () => {
+                await fetchSubscriptionEvents(currentDate); // Refresh the list
+                setShowDelete(false);
+            }}
+        />
 
-            <EditSubscriptionModal
-                show={showEdit}
-                onHide={() => setShowEdit(false)}
-                subscription={selectedSubscription}
-                onSubmit={async (data) => {
-                    await fetchSubscriptionEvents(currentDate); // Refresh the list after update
-                    setShowEdit(false);
-                }}
-            />
-        </Container>
-    );
+        <EditSubscriptionModal
+            show={showEdit}
+            onHide={() => setShowEdit(false)}
+            subscription={selectedSubscription}
+            onSubmit={async (data) => {
+                await fetchSubscriptionEvents(currentDate); // Refresh the list after update
+                setShowEdit(false);
+            }}
+        />
+    </Container>
+);
 };
 
 export default CalendarPage;

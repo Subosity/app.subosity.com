@@ -27,6 +27,7 @@ import { getOccurrencesInRange } from '../utils/recurrenceUtils';
 import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
 import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
 import { calculatePaymentSummary } from '../utils/subscriptionUtils';
+import { ProviderIcon } from '../components/ProviderIcon';
 
 const FundingDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -181,25 +182,12 @@ const FundingDetailPage: React.FC = () => {
                     <Card.Body>
                         <div className="d-flex justify-content-between align-items-start mb-4">
                             <div className="d-flex flex-grow-1">
-                                <div className="rounded-circle bg-light d-flex align-items-center justify-content-center p-2 me-3"
-                                    style={{
-                                        width: '48px',
-                                        height: '48px',
-                                        minWidth: '48px',
-                                        flexShrink: 0,
-                                        backgroundColor: 'var(--bs-white)'
-                                    }}>
-                                    <img
-                                        src={fundingSource.paymentProviderIcon}
-                                        alt={fundingSource.paymentProviderName}
-                                        style={{
-                                            width: '150%',
-                                            height: '150%',
-                                            objectFit: 'contain',
-                                            flexShrink: 0
-                                        }}
-                                    />
-                                </div>
+                                <ProviderIcon
+                                    icon={fundingSource.paymentProviderIcon}
+                                    name={fundingSource.paymentProviderName}
+                                    size={56}
+                                    zoomPercentage='125%'
+                                />
                                 <div className="w-100">
                                     <h3 className="mb-1">{fundingSource.name}</h3>
                                     <div className='text-muted' style={{ fontSize: '0.85em' }}>

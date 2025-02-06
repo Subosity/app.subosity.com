@@ -8,7 +8,7 @@ import { useAlerts } from '../../AlertsContext';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
 import RecurrenceComponent from '../RecurrenceComponent';
 import '../../styles/subscriptionCard.css';
-import { SubscriptionProviderIcon } from '../SubscriptionProvider/SubscriptionProviderIcon';
+import { ProviderIcon } from '../ProviderIcon';
 
 interface Props {
     subscription: Subscription;
@@ -52,10 +52,10 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                 {/* Top section with provider info */}
                 <div className="d-flex justify-content-between align-items-start w-100">
                     <div className="d-flex align-items-center me-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
-                        <SubscriptionProviderIcon
+                        <ProviderIcon
                             icon={subscription.providerIcon}
                             name={subscription.providerName}
-                            size={48}
+                            size={56}
                         />
                         <div className="ms-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
                             <h5 className="mb-1 text-truncate provider-name">
@@ -105,15 +105,12 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                 {/* Bottom section */}
                 <div className="mt-auto pt-3 d-flex justify-content-between align-items-end">
                     {/* Payment info on the left */}
-                    <div className="d-flex align-items-center" style={{ color: 'var(--bs-body-color)', fontSize: '.85em' }}>
-                        <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2"
-                            style={{ backgroundColor: 'var(--bs-white)' }}>
-                            <img
-                                src={subscription.fundingSource?.paymentProviderIcon}
-                                style={{ height: 'auto', width: '22px' }}
-                                alt={`${subscription.fundingSource?.paymentProviderName} icon`}
-                            />
-                        </div>
+                    <div className="d-flex align-items-center text-muted" style={{ color: 'var(--bs-body-color)', fontSize: '.85em' }}>
+                        <ProviderIcon
+                            icon={subscription.fundingSource?.paymentProviderIcon}
+                            name={subscription.fundingSource?.paymentProviderName}
+                            size={32}
+                        />
                         {subscription.fundingSource?.name}
                     </div>
 

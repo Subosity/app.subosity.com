@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
 import RecurrenceComponent from '../RecurrenceComponent';
 import '../../styles/subscriptionListItem.css';
-import { SubscriptionProviderIcon } from '../SubscriptionProvider/SubscriptionProviderIcon';
+import { ProviderIcon } from '../ProviderIcon';
 
 interface Props {
     subscription: Subscription;
@@ -49,31 +49,17 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
             }}
             onClick={handleItemClick}
         >
-            <div style={{ width: '32px', flexShrink: 0 }} className="me-3">
-                <SubscriptionProviderIcon
+            <div style={{ width: '40px', flexShrink: 0 }} className="me-3">
+                <ProviderIcon
                     icon={subscription.providerIcon}
                     name={subscription.providerName}
-                    size={32}
+                    size={40}
                 />
-                <div
-                    className="rounded bg-light d-flex align-items-center justify-content-center"
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        backgroundColor: 'var(--bs-white)'
-                    }}
-                    title={`${subscription.fundingSource?.paymentProviderName}\n${subscription.fundingSource?.name}`}
-                >
-                    <img
-                        src={subscription.fundingSource?.paymentProviderIcon}
-                        alt={subscription.fundingSource?.paymentProviderName}
-                        style={{
-                            width: '24px',
-                            height: '24px',
-                            objectFit: 'contain'
-                        }}
-                    />
-                </div>
+                <ProviderIcon
+                    icon={subscription.fundingSource?.paymentProviderIcon}
+                    name={subscription.fundingSource?.paymentProviderName}
+                    size={40}
+                />
             </div>
 
             {/* Main Content Column */}

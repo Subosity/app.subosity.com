@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDollar, faEdit, faLayerGroup, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FundingSource } from '../../types/FundingSource';
 import { useNavigate } from 'react-router-dom';
+import { ProviderIcon } from '../ProviderIcon';
 
 interface Props {
     fundingSource: FundingSource;
@@ -22,7 +23,7 @@ const FundingCard: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) => {
     };
 
     return (
-        <Card 
+        <Card
             className="h-100 bg-body-tertiary border shadow"
             onClick={handleCardClick}
             style={{ cursor: 'pointer' }}
@@ -31,24 +32,11 @@ const FundingCard: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) => {
                 {/* Top section with provider info */}
                 <div className="d-flex justify-content-between align-items-start w-100">
                     <div className="d-flex align-items-center me-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
-                        <div className="rounded-circle d-flex align-items-center justify-content-center me-2"
-                            style={{
-                                width: '48px',
-                                height: '48px',
-                                backgroundColor: 'var(--bs-gray-200)',
-                                flexShrink: 0,
-                                overflow: 'hidden'
-                            }}>
-                            <img
-                                src={fundingSource.paymentProvider.icon}
-                                alt=""
-                                style={{
-                                    width: '150%',
-                                    height: '150%',
-                                    objectFit: 'contain'
-                                }}
-                            />
-                        </div>
+                        <ProviderIcon
+                            icon={fundingSource.paymentProvider.icon}
+                            name={fundingSource.paymentProvider.name}
+                            size={56}
+                        />
                         <div className="ms-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
                             <h5 className="mb-1 text-truncate">
                                 {fundingSource.name}
