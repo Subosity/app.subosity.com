@@ -37,10 +37,41 @@ const updateSW = registerSW({
         await updateSW(true);
       }
     } catch (err) {
-      console.debug('Version check failed:', err);
+      console.warn('Version check failed:', err);
     }
   }
 });
+
+// Add this near your existing code in main.jsx
+let currentVersion = null;
+
+async function pollVersion() {
+  try {
+    console.log('Polling version.txt...');
+    const response = await fetch(`/version.txt?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    });
+    if (response.ok) {
+      const newVersion = (await response.text()).trim();
+      console.log('Fetched version:', newVersion);
+      if (currentVersion && newVersion !== currentVersion) {
+        console.log('New version detected:', newVersion);
+        window.dispatchEvent(new CustomEvent('pwaUpdateAvailable'));
+      }
+      currentVersion = newVersion;
+    } else {
+      console.warn('Failed to fetch version.txt:', response.status);
+    }
+  } catch (err) {
+    console.error('Error polling version.txt:', err);
+  }
+}
+
+// Start polling every minute
+setInterval(pollVersion, 60 * 1000);
+// Also trigger an immediate poll on startup
+pollVersion();
 
 // Initialize immediately
 if ('serviceWorker' in navigator) {
