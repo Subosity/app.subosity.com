@@ -105,8 +105,6 @@ const Navigation: React.FC = () => {
                                 {/* Hide in mobile, show in desktop */}
                                 <div className="d-none d-lg-flex align-items-center">
                                     <Nav.Link
-                                        as={Button}
-                                        variant="link"
                                         className="position-relative p-2"
                                         onClick={() => setShowAlerts(true)}
                                     >
@@ -114,7 +112,7 @@ const Navigation: React.FC = () => {
                                             icon={faBell}
                                             className={`${unreadCount > 0 ? "text-warning" : "text-body-secondary"} me-2`}
                                         />
-                                        Alerts
+                                         <span>Alerts</span>
                                         {unreadCount > 0 && (
                                             <span
                                                 className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -176,7 +174,7 @@ const Navigation: React.FC = () => {
                                         Theme ({theme})
                                     </Nav.Link>
                                     <hr className="my-2 opacity-25" />
-                                    <Nav.Link onClick={() => { logout(); closeNavbar(); }} className="w-100 text-danger">
+                                    <Nav.Link onClick={() => { logout(); closeNavbar(); }} className="w-100">
                                         <FontAwesomeIcon icon={faUser} className="me-2" />
                                         Logout
                                     </Nav.Link>
