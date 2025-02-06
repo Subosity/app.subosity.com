@@ -19,10 +19,8 @@ const updateSW = registerSW({
   periodicInterval: 60 * 1000, // Check every minute
   async checkUpdate() {
     try {
-      // Add debug logging
       console.log('Checking for updates...');
       const response = await fetch(`/version.txt?t=${new Date().getTime()}`, {
-        // Force bypass cache
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
@@ -42,17 +40,24 @@ const updateSW = registerSW({
   }
 });
 
-// Add this near your existing code in main.jsx
+// Polling logic for /version.txt
 let currentVersion = null;
+let pollInterval;
 
 async function pollVersion() {
   try {
     console.log('Polling version.txt...');
     const response = await fetch(`/version.txt?t=${Date.now()}`, {
       cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
-    if (response.ok) {
+    
+    // Check for expected content-type
+    const contentType = response.headers.get('content-type') || '';
+    if (response.ok && contentType.includes('text/plain')) {
       const newVersion = (await response.text()).trim();
       console.log('Fetched version:', newVersion);
       if (currentVersion && newVersion !== currentVersion) {
@@ -61,22 +66,30 @@ async function pollVersion() {
       }
       currentVersion = newVersion;
     } else {
-      console.warn('Failed to fetch version.txt:', response.status);
+      console.warn(
+        'Ignoring response because either status is not OK or content-type is not text/plain.',
+        response.status,
+        contentType
+      );
+      // Stop polling locally since it's not meaningful here
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        console.log('Stopped polling /version.txt');
+      }
     }
   } catch (err) {
     console.error('Error polling version.txt:', err);
   }
 }
 
-// Start polling every minute
-setInterval(pollVersion, 60 * 1000);
+// Start polling every minute and capture the interval handle
+pollInterval = setInterval(pollVersion, 60 * 1000);
 // Also trigger an immediate poll on startup
 pollVersion();
 
-// Initialize immediately
+// Initialize service worker immediately, if supported
 if ('serviceWorker' in navigator) {
   updateSW();
-  // Trigger initial check
   setTimeout(() => updateSW(true), 1000);
 }
 
