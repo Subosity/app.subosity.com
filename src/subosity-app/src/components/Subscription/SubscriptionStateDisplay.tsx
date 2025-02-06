@@ -10,7 +10,7 @@ import {
     faQuestion 
 } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment';
-import { supabase } from '../supabaseClient'; // Assuming you have a supabase client
+import { supabase } from '../../supabaseClient'; // Assuming you have a supabase client
 
 interface Props {
     state: string;

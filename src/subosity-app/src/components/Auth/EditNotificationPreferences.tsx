@@ -12,9 +12,9 @@ import {
     faComment,
     faTag
 } from '@fortawesome/free-solid-svg-icons';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
-import { useAuth } from '../AuthContext';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
+import { useAuth } from '../../AuthContext';
 import ConfirmResetPreferenceModal from './ConfirmResetPreferenceModal';
 
 interface NotificationSchedule {

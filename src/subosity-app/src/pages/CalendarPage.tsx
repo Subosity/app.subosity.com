@@ -7,11 +7,11 @@ import { getOccurrencesInRange } from '../utils/recurrenceUtils';
 import { useTheme } from '../ThemeContext';
 import { Container, Modal } from 'react-bootstrap';
 import '../styles/calendar.css';
-import SubscriptionListItem from '../components/SubscriptionListItem';
+import SubscriptionListItem from '../components/Subscription/SubscriptionListItem';
 import { Subscription } from '../types/Subscription';
-import SubscriptionCard from '../components/SubscriptionCard';
-import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
-import EditSubscriptionModal from '../components/EditSubscriptionModal';
+import SubscriptionCard from '../components/Subscription/SubscriptionCard';
+import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
+import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
 import { useToast } from '../ToastContext';
 
 const localizer = momentLocalizer(moment);

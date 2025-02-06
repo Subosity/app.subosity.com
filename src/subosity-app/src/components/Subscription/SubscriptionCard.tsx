@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faRotate, faHand, faBell, faCheckCircle, faClock, faBan } from '@fortawesome/free-solid-svg-icons';
-import { Subscription } from '../types';
+import { Subscription } from '../../types/Subscription';
 import { useNavigate } from 'react-router-dom';
-import { useAlerts } from '../AlertsContext';
+import { useAlerts } from '../../AlertsContext';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
-import RecurrenceComponent from './RecurrenceComponent';
-import '../styles/subscriptionCard.css';
+import RecurrenceComponent from '../RecurrenceComponent';
+import '../../styles/subscriptionCard.css';
+import { SubscriptionProviderIcon } from '../SubscriptionProvider/SubscriptionProviderIcon';
 
 interface Props {
     subscription: Subscription;
@@ -51,25 +52,11 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                 {/* Top section with provider info */}
                 <div className="d-flex justify-content-between align-items-start w-100">
                     <div className="d-flex align-items-center me-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
-                        <div className="rounded-circle bg-light d-flex align-items-center justify-content-center p-1"
-                            style={{
-                                width: '48px',
-                                height: '48px',
-                                backgroundColor: 'var(--bs-white)',
-                                flexShrink: 0,
-                                overflow: 'hidden' // Add this to clip overflow
-                            }}>
-                            <img
-                                src={subscription.providerIcon}
-                                alt={subscription.providerName}
-                                style={{
-                                    width: '150%',    // Change to percentage
-                                    height: '150%',   // Change to percentage
-                                    objectFit: 'contain',
-                                    padding: '4px'    // Add padding to prevent touching edges
-                                }}
-                            />
-                        </div>
+                        <SubscriptionProviderIcon
+                            icon={subscription.providerIcon}
+                            name={subscription.providerName}
+                            size={48}
+                        />
                         <div className="ms-3" style={{ minWidth: 0, flex: '1 1 auto' }}>
                             <h5 className="mb-1 text-truncate provider-name">
                                 {subscription.providerName}
@@ -122,7 +109,7 @@ const SubscriptionCard: React.FC<Props> = ({ subscription, onEdit, onDelete }) =
                         <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2"
                             style={{ backgroundColor: 'var(--bs-white)' }}>
                             <img
-                                src={subscription.fundingSource?.paymentProviderIcon} 
+                                src={subscription.fundingSource?.paymentProviderIcon}
                                 style={{ height: 'auto', width: '22px' }}
                                 alt={`${subscription.fundingSource?.paymentProviderName} icon`}
                             />

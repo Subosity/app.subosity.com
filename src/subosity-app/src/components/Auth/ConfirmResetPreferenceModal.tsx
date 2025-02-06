@@ -2,7 +2,7 @@ import React from 'react';
 import { Offcanvas, Button, Alert, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faRotateLeft, faExclamationTriangle, faCode } from '@fortawesome/free-solid-svg-icons';
-import { useTheme } from '../ThemeContext';
+import { useTheme } from '../../ThemeContext';
 
 interface Props {
     show: boolean;

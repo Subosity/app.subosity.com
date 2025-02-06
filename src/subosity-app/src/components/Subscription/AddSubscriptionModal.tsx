@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { Offcanvas, Button } from 'react-bootstrap';
-import { Subscription } from '../types';
+import { Subscription } from '../../types';
 import SubscriptionForm, { SubscriptionFormRef } from './SubscriptionForm';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faSave, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 

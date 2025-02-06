@@ -23,20 +23,23 @@ import {
     faCalendarDay,
     faCalendarWeek,
     faCalendarDays,
-    faCalendar
+    faCalendar,
+    faHistory,
+    faHandHoldingDollar
 } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
 import { Subscription, SubscriptionAlert } from '../types';
-import EditSubscriptionModal from '../components/EditSubscriptionModal';
-import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
-import SubscriptionAlertList from '../components/SubscriptionAlertList';
+import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
+import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
+import SubscriptionAlertList from '../components/SubscriptionAlert/SubscriptionAlertList';
 import { useAlerts } from '../AlertsContext';
 import NoAlertsHero from '../components/NoAlertsHero';
-import SubscriptionStateDisplay from '../components/SubscriptionStateDisplay';
-import SubscriptionTimeline from '../components/SubscriptionTimeline';
+import SubscriptionStateDisplay from '../components/Subscription/SubscriptionStateDisplay';
+import SubscriptionTimeline from '../components/Subscription/SubscriptionTimeline';
 import RecurrenceComponent from '../components/RecurrenceComponent';
 import { getOccurrencesInRange } from '../utils/recurrenceUtils';
+import { SubscriptionProviderIcon } from '../components/SubscriptionProvider/SubscriptionProviderIcon';
 
 const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -106,6 +109,8 @@ const SubscriptionDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showEdit, setShowEdit] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
+    const [showTimeline, setShowTimeline] = useState(false);
+    const [showFunding, setShowFunding] = useState(false);
     const [filterType, setFilterType] = useState<'all' | 'unread' | 'read'>('unread');
     const [alerts, setAlerts] = useState<SubscriptionAlert[]>([]);
     const [counts, setCounts] = useState({ all: 0, unread: 0, read: 0 });
@@ -177,7 +182,7 @@ const SubscriptionDetail: React.FC = () => {
                 providerDescription: data.subscription_provider.description,
                 providerCategory: data.subscription_provider.category,
                 providerIcon: data.subscription_provider.icon,
-                providerWebsiteUrl: data.subscription_provider.website_url,
+                providerWebsiteUrl: data.subscription_provider.website,
                 providerUnsubscribeUrl: data.subscription_provider.unsubscribe_url,
                 nickname: data.nickname,
                 startDate: data.start_date,
@@ -252,187 +257,230 @@ const SubscriptionDetail: React.FC = () => {
                     borderColor: 'var(--bs-border-color)'
                 }} className="shadow">
                     <Card.Body>
-                        <div className="d-flex justify-content-between align-items-start mb-4">
-                            <div className="d-flex">
-                                <div className="rounded-circle bg-light d-flex align-items-center justify-content-center p-2 me-3"
-                                    style={{
-                                        width: '48px',
-                                        height: '48px',
-                                        minWidth: '48px', // Add this to prevent shrinking
-                                        flexShrink: 0,    // Add this to prevent shrinking
-                                        backgroundColor: 'var(--bs-white)'
-                                    }}>
-                                    <img
-                                        src={subscription.providerIcon}
-                                        alt={subscription.providerName}
-                                        style={{
-                                            width: '150%',     // Reduce slightly from 48px
-                                            height: '150%',    // Make sure width/height are equal
-                                            objectFit: 'contain',
-                                            flexShrink: 0      // Prevent image from shrinking
-                                        }}
-                                    />
-                                </div>
-                                <div>
-                                    <h3 className="mb-1">{subscription.providerName}</h3>
-                                    {subscription.nickname && (
-                                        <div className="text-muted mb-2">({subscription.nickname})</div>
-                                    )}
-                                    <div className='text-muted' style={{ fontSize: '0.85em' }}>
-                                        {subscription.providerDescription}
-                                    </div>
-                                    <Badge bg={subscription.autoRenewal ? 'success' : 'secondary'}>
-                                        <FontAwesomeIcon
-                                            icon={subscription.autoRenewal ? faRotate : faHand}
-                                            className="me-2"
+                        <div className="mb-4">
+                            {/* Row 1: Provider Info and Details */}
+                            <div className="row g-4">
+                                {/* Column 1: Provider Identity */}
+                                <div className="col-12 col-lg-6">
+                                    <div className="d-flex">
+                                        <SubscriptionProviderIcon
+                                            icon={subscription.providerIcon}
+                                            name={subscription.providerName}
+                                            size={64}
                                         />
-                                        {subscription.autoRenewal ? 'Auto-Renewal' : 'Manual Renewal'}
-                                    </Badge>
+                                        <div className="ms-3">
+                                            <h3 className="mb-1">{subscription.providerName}</h3>
+                                            <Link to={subscription.providerWebsiteUrl} target="_blank" className="text-decoration-none">{subscription.providerWebsiteUrl}</Link>
+                                            {subscription.nickname && (
+                                                <div className="text-muted mb-2">({subscription.nickname})</div>
+                                            )}
+                                            <div className='text-muted' style={{ fontSize: '0.85em' }}>
+                                                {subscription.providerDescription}
+                                            </div>
+                                            <Badge bg={subscription.autoRenewal ? 'success' : 'secondary'}>
+                                                <FontAwesomeIcon
+                                                    icon={subscription.autoRenewal ? faRotate : faHand}
+                                                    className="me-2"
+                                                />
+                                                {subscription.autoRenewal ? 'Auto-Renewal' : 'Manual Renewal'}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Column 2: Subscription Details */}
+                                <div className="col-12 col-lg-6">
+                                    <dl className="row g-3 m-0">
+                                        <dt className="col-12 col-sm-4">Category</dt>
+                                        <dd className="col-12 col-sm-8 mb-0 border rounded p-2">{subscription.providerCategory || 'Unknown Category'}</dd>
+
+                                        <dt className="col-12 col-sm-4">Amount</dt>
+                                        <dd className="col-12 col-sm-8 mb-0 border rounded p-2 d-flex justify-content-between">
+                                            <span className="me-2">${subscription.amount.toFixed(2)}</span>
+                                            <RecurrenceComponent
+                                                subscription={subscription}
+                                                mode="badge"
+                                                thresholds={{ warning: 20, urgent: 10 }}
+                                            />
+                                        </dd>
+
+                                        <dt className="col-12 col-sm-4">Recurrence</dt>
+                                        <dd className="col-12 col-sm-8 mb-0 border rounded p-2">
+                                            <RecurrenceComponent subscription={subscription} mode="text" />
+                                        </dd>
+
+                                        <dt className="col-12 col-sm-4">Start Date</dt>
+                                        <dd className="col-12 col-sm-8 mb-0 border rounded p-2">
+                                            {subscription.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Not specified'}
+                                        </dd>
+
+                                        <dt className="col-12 col-sm-4">Unsubscribe</dt>
+                                        <dd className="col-12 col-sm-8 mb-0 border rounded p-2">
+                                            <Button variant="link" href={subscription.providerUnsubscribeUrl} target="_blank" className="p-0">
+                                                <FontAwesomeIcon icon={faLink} className="me-2" />
+                                                View unsubscribe instructions
+                                            </Button>
+                                        </dd>
+                                    </dl>
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center gap-2">
-                                <Button variant="outline-primary" size="sm" className="d-inline-flex align-items-center" onClick={() => setShowEdit(true)}>
-                                    <FontAwesomeIcon icon={faEdit} className="me-2" />
-                                    Edit
+
+                            {/* Row 2: Notes Section (if exists) */}
+                            {subscription.notes && (
+                                <div className="row mt-4">
+                                    <div className="col-12">
+                                        <h6 className="mb-2">Notes</h6>
+                                        <div className="border rounded p-3 bg-body-tertiary">
+                                            {subscription.notes}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    className="d-inline-flex align-items-center me-2"
+                                    onClick={() => setShowTimeline(!showTimeline)}
+                                >
+                                    <FontAwesomeIcon icon={faHistory} className="me-sm-2" />
+                                    <span className="d-none d-sm-inline">
+                                        {showTimeline ? 'Hide' : 'Show'} Timeline
+                                    </span>
                                 </Button>
-                                <Button variant="outline-danger" size="sm" className="d-inline-flex align-items-center" onClick={() => setShowDelete(true)}>
-                                    <FontAwesomeIcon icon={faTrash} className="me-2" />
-                                    Delete
+                                <Button
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    className="d-inline-flex align-items-center"
+                                    onClick={() => setShowFunding(!showFunding)}
+                                >
+                                    <FontAwesomeIcon icon={faHandHoldingDollar} className="me-sm-2" />
+                                    <span className="d-none d-sm-inline">
+                                        {showFunding ? 'Hide' : 'Show'} Funding
+                                    </span>
+                                </Button>
+                            </div>
+
+                            <div className="d-flex gap-2">
+                                <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    className="d-inline-flex align-items-center"
+                                    onClick={() => setShowEdit(true)}
+                                >
+                                    <FontAwesomeIcon icon={faEdit} className="me-sm-2" />
+                                    <span className="d-none d-sm-inline">
+                                        Edit
+                                    </span>
+                                </Button>
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    className="d-inline-flex align-items-center"
+                                    onClick={() => setShowDelete(true)}
+                                >
+                                    <FontAwesomeIcon icon={faTrash} className="me-sm-2" />
+                                    <span className="d-none d-sm-inline">
+                                        Delete
+                                    </span>
                                 </Button>
                             </div>
                         </div>
 
-                        <Card className="mb-4 shadow-sm p-3">
-                            <dl className="row">
-                                <dt className="col-sm-3">Category</dt>
-                                <dd className="col-sm-9">{subscription.providerCategory || 'Unknown Category'}</dd>
-
-                                <dt className="col-sm-3">Amount</dt>
-                                <dd className="col-sm-9">
-                                    <span className="me-2">
-                                        ${subscription.amount.toFixed(2)}
-                                    </span>
-                                    <span className="me-2">
-                                        <RecurrenceComponent
-                                            subscription={subscription}
-                                            mode="text"
-                                        />
-                                    </span>
-                                    <RecurrenceComponent
-                                        subscription={subscription}
-                                        mode="badge"
-                                        thresholds={{ warning: 20, urgent: 10 }}
-                                    />
-                                </dd>
-
-                                <dt className="col-sm-3">Start Date</dt>
-                                <dd className="col-sm-9">
-                                    {subscription.startDate ? new Date(subscription.startDate).toLocaleDateString() : 'Not specified'}
-                                </dd>
-
-                                <dt className="col-sm-3">Funding Source</dt>
-                                <dd className="col-sm-9">
-                                    <Link
-                                        to={`/funding/${subscription.fundingSource?.id}`}
-                                        className="text-decoration-none"
-                                        style={{ color: 'var(--bs-body-color)' }}
-                                    >
-                                        <div className="d-flex align-items-center">
-                                            <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
-                                                <img
-                                                    src={subscription.fundingSource?.paymentProviderIcon}
-                                                    alt={subscription.fundingSource?.paymentProviderName}
-                                                    style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                                                />
+                        {showFunding && (
+                            <Card className="mt-4 shadow-sm p-3">
+                                <dl className="row">
+                                    <dt className="col-12 col-lg-2">Funding Source</dt>
+                                    <dd className="col-12 col-lg-10">
+                                        <Link
+                                            to={`/funding/${subscription.fundingSource?.id}`}
+                                            className="text-decoration-none"
+                                            style={{ color: 'var(--bs-body-color)' }}
+                                            title='Click to go to Funding Source'
+                                        >
+                                            <div className="d-flex align-items-center">
+                                                <div className="rounded bg-light d-flex align-items-center justify-content-center p-1 me-2">
+                                                    <img
+                                                        src={subscription.fundingSource?.paymentProviderIcon}
+                                                        alt={subscription.fundingSource?.paymentProviderName}
+                                                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                                                    />
+                                                </div>
+                                                {subscription.fundingSource?.name}
                                             </div>
-                                            {subscription.fundingSource?.name}
-                                        </div>
-                                    </Link>
-                                </dd>
+                                        </Link>
+                                    </dd>
 
-                                {subscription.notes && (
-                                    <>
-                                        <dt className="col-sm-3">Notes</dt>
-                                        <dd className="col-sm-9">{subscription.notes}</dd>
-                                    </>
-                                )}
 
-                                <dt className="col-sm-3">Unsubscribe</dt>
-                                <dd className="col-sm-9">
-                                    <Button
-                                        variant="link"
-                                        href={subscription.providerUnsubscribeUrl}
-                                        target="_blank"
-                                        className="p-0"
-                                    >
-                                        <FontAwesomeIcon icon={faLink} className="me-2" />
-                                        View unsubscribe instructions
-                                    </Button>
-                                </dd>
-                            </dl>
+                                </dl>
 
-                            <div className="row g-3">
-                                <div className="col-6 col-md-3">
-                                    <Card className="h-100 shadow-sm" style={{
-                                        backgroundColor: 'var(--bs-body-bg)',
-                                        borderColor: 'var(--bs-border-color)'
-                                    }}>
-                                        <Card.Body className="text-center">
-                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).daily.toFixed(2)}</h4>
-                                        </Card.Body>
-                                        <Card.Footer className="text-center">
-                                            <FontAwesomeIcon icon={faCalendarDay} className="me-2" />
-                                            Per Day
-                                        </Card.Footer>
-                                    </Card>
+                                <div className="row g-3">
+                                    <div className="col-6 col-md-3">
+                                        <Card className="h-100 shadow-sm" style={{
+                                            backgroundColor: 'var(--bs-body-bg)',
+                                            borderColor: 'var(--bs-border-color)'
+                                        }}>
+                                            <Card.Body className="text-center">
+                                                <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).daily.toFixed(2)}</h4>
+                                            </Card.Body>
+                                            <Card.Footer className="text-center">
+                                                <FontAwesomeIcon icon={faCalendarDay} className="me-2" />
+                                                Per Day
+                                            </Card.Footer>
+                                        </Card>
+                                    </div>
+                                    <div className="col-6 col-md-3">
+                                        <Card className="h-100 shadow-sm" style={{
+                                            backgroundColor: 'var(--bs-body-bg)',
+                                            borderColor: 'var(--bs-border-color)'
+                                        }}>
+                                            <Card.Body className="text-center">
+                                                <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).weekly.toFixed(2)}</h4>
+                                            </Card.Body>
+                                            <Card.Footer className="text-center">
+                                                <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
+                                                Per Week
+                                            </Card.Footer>
+                                        </Card>
+                                    </div>
+                                    <div className="col-6 col-md-3">
+                                        <Card className="h-100 shadow-sm" style={{
+                                            backgroundColor: 'var(--bs-body-bg)',
+                                            borderColor: 'var(--bs-border-color)'
+                                        }}>
+                                            <Card.Body className="text-center">
+                                                <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).monthly.toFixed(2)}</h4>
+                                            </Card.Body>
+                                            <Card.Footer className="text-center">
+                                                <FontAwesomeIcon icon={faCalendarDays} className="me-2" />
+                                                Per Month
+                                            </Card.Footer>
+                                        </Card>
+                                    </div>
+                                    <div className="col-6 col-md-3">
+                                        <Card className="h-100 shadow-sm" style={{
+                                            backgroundColor: 'var(--bs-body-bg)',
+                                            borderColor: 'var(--bs-border-color)'
+                                        }}>
+                                            <Card.Body className="text-center">
+                                                <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).yearly.toFixed(2)}</h4>
+                                            </Card.Body>
+                                            <Card.Footer className="text-center">
+                                                <FontAwesomeIcon icon={faCalendar} className="me-2" />
+                                                Per Year
+                                            </Card.Footer>
+                                        </Card>
+                                    </div>
                                 </div>
-                                <div className="col-6 col-md-3">
-                                    <Card className="h-100 shadow-sm" style={{
-                                        backgroundColor: 'var(--bs-body-bg)',
-                                        borderColor: 'var(--bs-border-color)'
-                                    }}>
-                                        <Card.Body className="text-center">
-                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).weekly.toFixed(2)}</h4>
-                                        </Card.Body>
-                                        <Card.Footer className="text-center">
-                                            <FontAwesomeIcon icon={faCalendarWeek} className="me-2" />
-                                            Per Week
-                                        </Card.Footer>
-                                    </Card>
-                                </div>
-                                <div className="col-6 col-md-3">
-                                    <Card className="h-100 shadow-sm" style={{
-                                        backgroundColor: 'var(--bs-body-bg)',
-                                        borderColor: 'var(--bs-border-color)'
-                                    }}>
-                                        <Card.Body className="text-center">
-                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).monthly.toFixed(2)}</h4>
-                                        </Card.Body>
-                                        <Card.Footer className="text-center">
-                                            <FontAwesomeIcon icon={faCalendarDays} className="me-2" />
-                                            Per Month
-                                        </Card.Footer>
-                                    </Card>
-                                </div>
-                                <div className="col-6 col-md-3">
-                                    <Card className="h-100 shadow-sm" style={{
-                                        backgroundColor: 'var(--bs-body-bg)',
-                                        borderColor: 'var(--bs-border-color)'
-                                    }}>
-                                        <Card.Body className="text-center">
-                                            <h4 className="mb-0">${calculateSubscriptionPaymentSummary(subscription).yearly.toFixed(2)}</h4>
-                                        </Card.Body>
-                                        <Card.Footer className="text-center">
-                                            <FontAwesomeIcon icon={faCalendar} className="me-2" />
-                                            Per Year
-                                        </Card.Footer>
-                                    </Card>
-                                </div>
-                            </div>
 
-                        </Card>
+                            </Card>
+                        )}
 
-                        {subscription && (
+
+                        {(subscription && showTimeline) && (
                             <div className="mt-4 shadow-sm">
                                 <SubscriptionTimeline subscriptionId={subscription.id} />
                             </div>
@@ -451,7 +499,8 @@ const SubscriptionDetail: React.FC = () => {
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h5 className="mb-0">
                                 <FontAwesomeIcon icon={faBell} className="me-2" />
-                                Subscription Alerts
+                                <span className="d-inline d-sm-none">Alerts</span>
+                                <span className="d-none d-sm-inline">Subscription Alerts</span>
                             </h5>
                             <div className="btn-group btn-group-sm">
                                 <Button
@@ -462,7 +511,7 @@ const SubscriptionDetail: React.FC = () => {
                                         handleFilterChange('all');
                                     }}
                                 >
-                                    <FontAwesomeIcon icon={faEnvelopesBulk} className="me-2" />
+                                    <FontAwesomeIcon icon={faEnvelopesBulk} className="me-sm-2" />
                                     <span className="d-none d-sm-inline">All ({alerts.length})</span>
                                 </Button>
                                 <Button
@@ -473,7 +522,7 @@ const SubscriptionDetail: React.FC = () => {
                                         handleFilterChange('unread');
                                     }}
                                 >
-                                    <FontAwesomeIcon icon={faEnvelope} className="me-2" />
+                                    <FontAwesomeIcon icon={faEnvelope} className="me-sm-2" />
                                     <span className="d-none d-sm-inline">Unread ({alerts.filter(a => !a.read).length})</span>
                                 </Button>
                                 <Button
@@ -484,7 +533,7 @@ const SubscriptionDetail: React.FC = () => {
                                         handleFilterChange('read');
                                     }}
                                 >
-                                    <FontAwesomeIcon icon={faEnvelopeOpen} className="me-2" />
+                                    <FontAwesomeIcon icon={faEnvelopeOpen} className="me-sm-2" />
                                     <span className="d-none d-sm-inline">Read ({alerts.filter(a => a.read).length})</span>
                                 </Button>
                             </div>

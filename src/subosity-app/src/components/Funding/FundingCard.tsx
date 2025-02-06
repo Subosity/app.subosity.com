@@ -23,7 +23,7 @@ const FundingCard: React.FC<Props> = ({ fundingSource, onEdit, onDelete }) => {
 
     return (
         <Card 
-            className="h-100 bg-body-tertiary border"
+            className="h-100 bg-body-tertiary border shadow"
             onClick={handleCardClick}
             style={{ cursor: 'pointer' }}
         >

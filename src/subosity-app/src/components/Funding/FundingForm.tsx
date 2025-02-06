@@ -2,11 +2,8 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'rea
 import { Form, Button, InputGroup } from 'react-bootstrap';
 import { FundingSource } from '../../types/FundingSource';
 import { supabase } from '../../supabaseClient';
-import Select, { components } from 'react-select';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCreditCard, faSave, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { selectStyles } from '../../styles/selectStyles';
-import PaymentProviderDropdown from '../PaymentProviderDropdown';
+import PaymentProviderDropdown from '../PaymentProvider/PaymentProviderDropdown';
 import CreatableSelect from 'react-select/creatable';
 
 export interface FundingFormRef {

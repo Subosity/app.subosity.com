@@ -292,7 +292,7 @@ const FundingPage = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="border rounded">
+                        <div className="border rounded shadow">
                             {filteredSources.map(source => (
                                 <FundingListItem
                                     key={source.id}

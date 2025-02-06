@@ -3,9 +3,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Card, Form, InputGroup, Alert, Collapse } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThLarge, faList, faSearch, faFilter, faCheck, faRotateLeft, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { Subscription } from '../../types';
-import SubscriptionCard from '../SubscriptionCard';
-import SubscriptionListItem from '../SubscriptionListItem';
+import { Subscription } from '../../types/Subscription';
+import SubscriptionCard from './SubscriptionCard';
+import SubscriptionListItem from './SubscriptionListItem';
 import Select, { components } from 'react-select';
 import { selectStyles } from '../../styles/selectStyles';
 

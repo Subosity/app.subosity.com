@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import md5 from 'md5'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
-import { useTheme } from '../ThemeContext'
+import { useTheme } from '../../ThemeContext'
 
 interface UserAvatarProps {
     email?: string | null;

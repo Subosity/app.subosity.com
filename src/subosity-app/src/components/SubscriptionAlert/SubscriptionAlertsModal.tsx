@@ -13,11 +13,11 @@ import {
     faEnvelope,
     faEnvelopeOpen
 } from '@fortawesome/free-solid-svg-icons';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
 import SubscriptionAlertList from './SubscriptionAlertList';
-import { useAlerts } from '../AlertsContext';
-import NoAlertsHero from './NoAlertsHero';
+import { useAlerts } from '../../AlertsContext';
+import NoAlertsHero from '../NoAlertsHero';
 
 interface SubscriptionAlert {
     id: string;

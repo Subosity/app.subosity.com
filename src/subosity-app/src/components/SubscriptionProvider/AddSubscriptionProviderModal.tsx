@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Offcanvas, Button, Form, InputGroup, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faSave, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import SubscriptionFinder from './SubscriptionFinder';
-import { useToast } from '../ToastContext';
-import { supabase } from '../supabaseClient';
+import SubscriptionProviderFinder from './SubscriptionProviderFinder';
+import { useToast } from '../../ToastContext';
+import { supabase } from '../../supabaseClient';
 import Select from 'react-select/creatable';
 
 interface Props {
@@ -163,7 +163,7 @@ const AddSubscriptionProviderModal: React.FC<Props> = ({
             <Offcanvas.Body>
                 <Form>
                     <Form.Group className="mb-3">
-                        <SubscriptionFinder 
+                        <SubscriptionProviderFinder 
                             onMetadataFetched={handleMetadataFetched}
                             onIconSelected={handleIconSelected}
                             name={formData.name}

@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Badge, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faRotate, faHand, faBell, faCheckCircle, faClock, faBan } from '@fortawesome/free-solid-svg-icons';
-import { Subscription } from '../types';
-import { useAlerts } from '../AlertsContext';
+import { Subscription } from '../../types/Subscription';
+import { useAlerts } from '../../AlertsContext';
 import { useNavigate } from 'react-router-dom';
 import SubscriptionStateDisplay from './SubscriptionStateDisplay';
-import RecurrenceComponent from './RecurrenceComponent';
-import '../styles/subscriptionListItem.css';
+import RecurrenceComponent from '../RecurrenceComponent';
+import '../../styles/subscriptionListItem.css';
+import { SubscriptionProviderIcon } from '../SubscriptionProvider/SubscriptionProviderIcon';
 
 interface Props {
     subscription: Subscription;
@@ -49,27 +50,11 @@ const SubscriptionListItem: React.FC<Props> = ({ subscription, onEdit, onDelete 
             onClick={handleItemClick}
         >
             <div style={{ width: '32px', flexShrink: 0 }} className="me-3">
-                <div
-                    className="rounded-circle bg-light d-flex align-items-center justify-content-center mb-2"
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        backgroundColor: 'var(--bs-white)',
-                        overflow: 'hidden'
-                    }}
-                    title={`${subscription.providerName}\n${subscription.providerDescription}`}
-                >
-                    <img
-                        src={subscription.providerIcon}
-                        alt={subscription.providerName}
-                        style={{
-                            width: '150%',
-                            height: '150%',
-                            objectFit: 'contain',
-                            padding: '4px'
-                        }}
-                    />
-                </div>
+                <SubscriptionProviderIcon
+                    icon={subscription.providerIcon}
+                    name={subscription.providerName}
+                    size={32}
+                />
                 <div
                     className="rounded bg-light d-flex align-items-center justify-content-center"
                     style={{

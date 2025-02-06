@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Select, { components } from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 interface PaymentProvider {
     id: string;

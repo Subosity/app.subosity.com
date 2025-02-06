@@ -23,8 +23,8 @@ import {
 import { useTheme } from '../ThemeContext'
 import { useAuth } from '../AuthContext'
 import { Button, Dropdown, Navbar, Nav, Container } from 'react-bootstrap'
-import UserAvatar from './UserAvatar'
-import SubscriptionAlertsModal from './SubscriptionAlertsModal'
+import UserAvatar from './Auth/UserAvatar'
+import SubscriptionAlertsModal from './SubscriptionAlert/SubscriptionAlertsModal'
 import { supabase } from '../supabaseClient'
 import { Theme } from 'react-select'
 import { useAlerts } from '../AlertsContext';

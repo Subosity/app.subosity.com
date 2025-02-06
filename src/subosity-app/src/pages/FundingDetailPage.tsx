@@ -12,7 +12,8 @@ import {
     faCalendarWeek,
     faCalendarDays,
     faCalendar,
-    faHandHoldingDollar
+    faHandHoldingDollar,
+    faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
@@ -23,8 +24,8 @@ import DeleteUnableFundingModal from '../components/Funding/DeleteUnableFundingM
 import SubscriptionBrowser from '../components/Subscription/SubscriptionBrowser';
 import { Subscription } from '../types/Subscription';
 import { getOccurrencesInRange } from '../utils/recurrenceUtils';
-import EditSubscriptionModal from '../components/EditSubscriptionModal';
-import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
+import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
+import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
 import { calculatePaymentSummary } from '../utils/subscriptionUtils';
 
 const FundingDetailPage: React.FC = () => {
@@ -76,7 +77,8 @@ const FundingDetailPage: React.FC = () => {
                 paymentProviderId: data.payment_provider_id,
                 paymentProviderName: data.payment_provider.name,
                 paymentProviderIcon: data.payment_provider.icon,
-                owner: data.owner
+                owner: data.owner,
+                funding_type: data.funding_type
             });
             setSubscriptionCount(data.subscriptions?.count || 0);
         } catch (error) {
@@ -178,7 +180,7 @@ const FundingDetailPage: React.FC = () => {
                 }} className="shadow">
                     <Card.Body>
                         <div className="d-flex justify-content-between align-items-start mb-4">
-                            <div className="d-flex">
+                            <div className="d-flex flex-grow-1">
                                 <div className="rounded-circle bg-light d-flex align-items-center justify-content-center p-2 me-3"
                                     style={{
                                         width: '48px',
@@ -198,24 +200,35 @@ const FundingDetailPage: React.FC = () => {
                                         }}
                                     />
                                 </div>
-                                <div>
+                                <div className="w-100">
                                     <h3 className="mb-1">{fundingSource.name}</h3>
                                     <div className='text-muted' style={{ fontSize: '0.85em' }}>
                                         {fundingSource.description}
                                     </div>
-                                    <Badge bg="info">
-                                        <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
-                                        {subscriptionCount} Subscription{subscriptionCount !== 1 ? 's' : ''}
-                                    </Badge>
+                                    <div className="d-flex gap-2">
+                                        <Badge bg="info">
+                                            <FontAwesomeIcon icon={faHandHoldingDollar} className="me-2" />
+                                            {subscriptionCount} Subscription{subscriptionCount !== 1 ? 's' : ''}
+                                        </Badge>
+                                        <Badge bg="success">
+                                            <FontAwesomeIcon icon={faLayerGroup} className="me-2" />
+                                            {fundingSource.funding_type}
+                                        </Badge>
+                                    </div>
                                     {fundingSource.notes && (
-                                        <>
-                                            <dt className="col-sm-3">Notes</dt>
-                                            <dd className="col-sm-9">{fundingSource.notes}</dd>
-                                        </>
+                                        <div className="mt-3">
+                                            <div className="text-muted mb-1">Notes</div>
+                                            <div className="border rounded p-2" style={{
+                                                backgroundColor: 'var(--bs-body-bg)',
+                                                borderColor: 'var(--bs-border-color)'
+                                            }}>
+                                                {fundingSource.notes}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center gap-2">
+                            <div className="d-none d-md-flex align-items-center gap-2">
                                 <Button variant="outline-primary" size="sm"
                                     className="d-inline-flex align-items-center" onClick={() => setShowEditFunding(true)}>
                                     <FontAwesomeIcon icon={faEdit} className="me-2" />
@@ -339,7 +352,21 @@ const FundingDetailPage: React.FC = () => {
                                 </Card>
                             </div>
                         </div>
-
+                        <div className="d-flex justify-content-end mt-4">
+                            <div className="d-flex d-md-none align-items-end gap-2">
+                                <Button variant="outline-primary" size="sm"
+                                    className="d-inline-flex align-items-center" onClick={() => setShowEditFunding(true)}>
+                                    <FontAwesomeIcon icon={faEdit} className="me-2" />
+                                    Edit
+                                </Button>
+                                <Button variant="outline-danger" size="sm"
+                                    className="d-inline-flex align-items-center"
+                                    onClick={() => subscriptionCount > 0 ? setShowUnable(true) : setShowDeleteFunding(true)}>
+                                    <FontAwesomeIcon icon={faTrash} className="me-2" />
+                                    Delete
+                                </Button>
+                            </div>
+                        </div>
                     </Card.Body>
                 </Card>
             )}

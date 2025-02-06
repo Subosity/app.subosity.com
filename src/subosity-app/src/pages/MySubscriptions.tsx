@@ -5,9 +5,9 @@ import { faPlus, faHandHoldingDollar, faSquarePlus, faCalendarDay, faCalendarWee
 import { supabase } from '../supabaseClient';
 import { useToast } from '../ToastContext';
 import { Subscription } from '../types';
-import DeleteSubscriptionModal from '../components/DeleteSubscriptionModal';
-import EditSubscriptionModal from '../components/EditSubscriptionModal';
-import AddSubscriptionModal from '../components/AddSubscriptionModal';
+import DeleteSubscriptionModal from '../components/Subscription/DeleteSubscriptionModal';
+import EditSubscriptionModal from '../components/Subscription/EditSubscriptionModal';
+import AddSubscriptionModal from '../components/Subscription/AddSubscriptionModal';
 import SubscriptionBrowser from '../components/Subscription/SubscriptionBrowser';
 import { calculatePaymentSummary } from '../utils/subscriptionUtils';
 

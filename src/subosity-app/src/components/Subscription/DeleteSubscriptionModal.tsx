@@ -1,8 +1,8 @@
 import React from 'react';
 import { Offcanvas, Button, Alert } from 'react-bootstrap';
-import { Subscription } from '../types';
-import { supabase } from '../supabaseClient';
-import { useToast } from '../ToastContext';
+import { Subscription } from '../../types';
+import { supabase } from '../../supabaseClient';
+import { useToast } from '../../ToastContext';
 import { faDeleteLeft, faTrash, faExclamationCircle, faExclamationTriangle, faChevronLeft, faSkullCrossbones } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 

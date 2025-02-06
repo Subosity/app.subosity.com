@@ -8,7 +8,7 @@ import {
     faTriangleExclamation,
     faCircleExclamation
 } from '@fortawesome/free-solid-svg-icons';
-import { SubscriptionAlert } from '../types';
+import { SubscriptionAlert } from '../../types';
 
 interface Props {
     alerts: SubscriptionAlert[];

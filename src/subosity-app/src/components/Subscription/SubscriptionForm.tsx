@@ -1,15 +1,15 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Form, Button, InputGroup } from 'react-bootstrap';
-import { Subscription } from '../types';
-import { supabase } from '../supabaseClient';
+import { Subscription } from '../../types';
+import { supabase } from '../../supabaseClient';
 import Select, { components } from 'react-select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faClock, faCheckCircle, faBan, faTimesCircle, faPause, faCalendarAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
-import RecurrenceModal from './RecurrenceModal';
-import AddSubscriptionProviderModal from './AddSubscriptionProviderModal';
-import SubscriptionProviderDropdown from './SubscriptionProviderDropdown';
-import PaymentProviderDropdown from './PaymentProviderDropdown';
-import FundingSourceDropdown from './Funding/FundingSourceDropdown';
+import RecurrenceModal from '../RecurrenceModal';
+import AddSubscriptionProviderModal from '../SubscriptionProvider/AddSubscriptionProviderModal';
+import SubscriptionProviderDropdown from '../SubscriptionProvider/SubscriptionProviderDropdown';
+import PaymentProviderDropdown from '../PaymentProviderDropdown';
+import FundingSourceDropdown from '../Funding/FundingSourceDropdown';
 
 // Near the top with other interfaces
 type SubscriptionState = 'trial' | 'active' | 'canceled' | 'expired' | 'paused';

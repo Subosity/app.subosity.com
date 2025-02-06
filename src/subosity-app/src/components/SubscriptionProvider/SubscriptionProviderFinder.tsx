@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Form, InputGroup, Button, Spinner, Alert, Carousel } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faExclamationTriangle, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import { ThemeProvider } from '../ThemeContext';
+import { ThemeProvider } from '../../ThemeContext';
 
 interface Props {
     onMetadataFetched: (metadata: {
@@ -23,7 +23,7 @@ interface Props {
     existingProviders?: Array<{ name: string, website: string }>;
 }
 
-const SubscriptionFinder: React.FC<Props> = ({
+const SubscriptionProviderFinder: React.FC<Props> = ({
     onMetadataFetched,
     onIconSelected = () => { },
     name = '',
@@ -321,4 +321,4 @@ const SubscriptionFinder: React.FC<Props> = ({
     );
 };
 
-export default SubscriptionFinder;
+export default SubscriptionProviderFinder;

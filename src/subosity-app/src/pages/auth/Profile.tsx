@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faArrowRight, faKey } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../AuthContext';
-import UserAvatar from '../../components/UserAvatar';
+import UserAvatar from '../../components/Auth/UserAvatar';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();

@@ -4,10 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faEdit, faSort, faSortUp, faSortDown, faCode } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../../supabaseClient';
 import { useToast } from '../../ToastContext';
-import EditPreferenceModal from '../../components/EditPreferenceModal';
+import EditPreferenceModal from '../../components/Auth/EditPreferenceModal';
 import { useTheme } from '../../ThemeContext';
 import { useAuth } from '../../AuthContext';
-import EditNotificationPreferences from '../../components/EditNotificationPreferences';
+import EditNotificationPreferences from '../../components/Auth/EditNotificationPreferences';
 
 interface Preference {
     preference_key: string;
