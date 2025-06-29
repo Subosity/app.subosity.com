@@ -54,7 +54,21 @@ const SubscriptionProviderFinder: React.FC<Props> = ({
         setError(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-metadata?domain=${domain}`);
+            // Get the user's access token from Supabase Auth
+            const { data: { session } } = await import('../../supabaseClient').then(m => m.supabase.auth.getSession());
+            const accessToken = session?.access_token;
+            if (!accessToken) {
+                setError('User is not authenticated. Please log in again.');
+                return;
+            }
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-metadata?domain=${domain}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -100,12 +114,18 @@ const SubscriptionProviderFinder: React.FC<Props> = ({
         }
 
         try {
+            // Get the user's access token from Supabase Auth
+            const { data: { session } } = await import('../../supabaseClient').then(m => m.supabase.auth.getSession());
+            const accessToken = session?.access_token;
+            if (!accessToken) {
+                setError('User is not authenticated. Please log in again.');
+                return;
+            }
             const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/insert-subscription-provider`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+                    'Authorization': `Bearer ${accessToken}`
                 },
                 body: JSON.stringify({
                     name: metadata.name,
@@ -122,7 +142,7 @@ const SubscriptionProviderFinder: React.FC<Props> = ({
 
             alert('Subscription Provider saved successfully!');
         } catch (err) {
-            setError(`Failed to save Subscription Provider: ${err.message}`);
+            setError(`Failed to save Subscription Provider: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
     };
 
